@@ -1,15 +1,7 @@
 {
   "functions": {
-    "index.html": {
-      "headers": {
-        "cache-control": "s-maxage=0"
-      }
-    },
-    "dashboard.html": {
-      "headers": {
-        "cache-control": "s-maxage=0"
-      }
-    }
+    "index.html": {},
+    "dashboard.html": {}
   },
   "rewrites": [
     {
@@ -19,6 +11,26 @@
     {
       "source": "/dashboard",
       "destination": "/dashboard.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "cache-control",
+          "value": "s-maxage=0"
+        }
+      ]
+    },
+    {
+      "source": "/dashboard",
+      "headers": [
+        {
+          "key": "cache-control",
+          "value": "s-maxage=0"
+        }
+      ]
     }
   ]
 }
