@@ -1,8 +1,4 @@
 {
-  "functions": {
-    "index.html": {},
-    "dashboard.html": {}
-  },
   "rewrites": [
     {
       "source": "/",
