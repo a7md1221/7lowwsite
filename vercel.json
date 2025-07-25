@@ -1,0 +1,24 @@
+{
+  "functions": {
+    "index.html": {
+      "headers": {
+        "cache-control": "s-maxage=0"
+      }
+    },
+    "dashboard.html": {
+      "headers": {
+        "cache-control": "s-maxage=0"
+      }
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    }
+  ]
+}
