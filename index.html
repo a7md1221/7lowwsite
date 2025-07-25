@@ -670,257 +670,133 @@
         </div>
     </div>
 
-    <script>
-        // Initialize Supabase
-        const supabaseUrl  = "https://umoivfirzgwahcishhgo.supabase.co";
-        const supabaseKey  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4";
-        const supabase    = window.supabase?.createClient(supabaseUrl, supabaseKey);
-        // Form elements
-        const form = document.getElementById('orderForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const btnText = submitBtn.querySelector('.btn-text');
-        const globalMessage = document.getElementById('globalMessage');
-        const offlineBanner = document.getElementById('offlineBanner');
-        const productSelect = document.getElementById('product');
-        const quantityInput = document.getElementById('quantity');
-        const productPreview = document.getElementById('productPreview');
-        const previewDetails = document.getElementById('previewDetails');
-        const priceEstimate = document.getElementById('priceEstimate');
+ <script>
+  window.addEventListener("DOMContentLoaded", () => {
+    // 1) Init Supabase
+    const supabaseUrl = "https://umoivfirzgwahcishhgo.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4";
+    const supabase    = supabase.createClient(supabaseUrl, supabaseKey);
+    console.log("🚀 supabase:", supabase);
 
-        // Network status
-        let isOnline = navigator.onLine;
-        let offlineOrders = JSON.parse(localStorage.getItem('offlineOrders') || '[]');
+    // 2) Grab elements
+    const form           = document.getElementById("orderForm");
+    const globalMessage  = document.getElementById("globalMessage");
+    const submitBtn      = document.getElementById("submitBtn");
+    const btnText        = submitBtn.querySelector(".btn-text");
+    const productSelect  = document.getElementById("product");
+    const quantityInput  = document.getElementById("quantity");
+    const offlineBanner  = document.getElementById("offlineBanner");
+    const preview        = document.getElementById("productPreview");
+    const details        = document.getElementById("previewDetails");
+    const priceEstimate  = document.getElementById("priceEstimate");
+    let   isOnline       = navigator.onLine;
+    let   offlineOrders  = JSON.parse(localStorage.getItem("offlineOrders") || "[]");
 
-        // Update online status
-        function updateOnlineStatus() {
-            isOnline = navigator.onLine;
-            if (isOnline) {
-                offlineBanner.classList.remove('show');
-                syncOfflineOrders();
-            } else {
-                offlineBanner.classList.add('show');
-            }
+    // 3) Utility: show/hide offline banner & sync
+    function updateOnlineStatus() {
+      isOnline = navigator.onLine;
+      offlineBanner.classList.toggle("show", !isOnline);
+      if (isOnline) syncOfflineOrders();
+    }
+    window.addEventListener("online",  updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+    updateOnlineStatus();
+
+    // 4) Preview handler
+    function updatePreview() {
+      const opt = productSelect.selectedOptions[0];
+      const qty = parseFloat(quantityInput.value) || 0;
+      if (opt.value && qty > 0) {
+        const name = opt.text.split(" - ")[0];
+        const price = parseFloat(opt.dataset.price);
+        details.textContent     = `${name} × ${qty}kg`;
+        priceEstimate.textContent = `Prix estimé: ${(price*qty).toFixed(2)} DT`;
+        preview.classList.add("show");
+      } else {
+        preview.classList.remove("show");
+      }
+    }
+    productSelect.addEventListener("change", updatePreview);
+    quantityInput.addEventListener("input", updatePreview);
+
+    // 5) Simple validator & messaging
+    function showMessage(msg, isError=false) {
+      globalMessage.innerHTML = `<div class="${isError?"error-message-global":"success-message"}">${msg}</div>`;
+      setTimeout(() => globalMessage.innerHTML = "", 5000);
+    }
+
+    // 6) Sync offline
+    async function syncOfflineOrders() {
+      if (!isOnline || !supabase || offlineOrders.length===0) return;
+      for (let o of offlineOrders) {
+        try { await supabase.from("orders").insert([o]); }
+        catch(e){ console.error("Sync failed",e); break; }
+      }
+      offlineOrders = [];
+      localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
+    }
+
+    // 7) Form submit
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+
+      // Basic required check
+      const fields = form.querySelectorAll("input[required], select[required]");
+      let valid = true;
+      fields.forEach(f => {
+        if (!f.value.trim()) {
+          valid = false;
+          document.getElementById(f.name+"-error").textContent = "Ce champ est requis";
         }
+      });
+      if (!valid) { showMessage("Veuillez corriger les erreurs", true); return; }
 
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
+      // Loading state
+      submitBtn.disabled = true;
+      submitBtn.classList.add("loading");
+      btnText.textContent = "Envoi en cours...";
 
-        // Initialize
-        updateOnlineStatus();
+      // Build order
+      const data = new FormData(form);
+      const opt  = productSelect.selectedOptions[0];
+      const qty  = parseFloat(data.get("quantity"));
+      const order = {
+        id: Date.now().toString(),
+        customer_name: data.get("customerName"),
+        email: data.get("email")||null,
+        phone: data.get("phone"),
+        product: data.get("product"),
+        product_name: opt.text.split(" - ")[0],
+        quantity: qty,
+        price_per_kg: parseFloat(opt.dataset.price),
+        total_price: (parseFloat(opt.dataset.price)*qty).toFixed(2),
+        notes: data.get("notes")||null,
+        status: "pending",
+        created_at: new Date().toISOString()
+      };
 
-        // Product preview functionality
-        function updateProductPreview() {
-            const selectedProduct = productSelect.options[productSelect.selectedIndex];
-            const quantity = parseFloat(quantityInput.value);
-
-            if (selectedProduct.value && quantity > 0) {
-                const productName = selectedProduct.text.split(' - ')[0];
-                const price = parseFloat(selectedProduct.dataset.price);
-                const totalPrice = (price * quantity).toFixed(2);
-
-                previewDetails.textContent = `${productName} × ${quantity}kg`;
-                priceEstimate.textContent = `Prix estimé: ${totalPrice} DT`;
-                productPreview.classList.add('show');
-            } else {
-                productPreview.classList.remove('show');
-            }
+      try {
+        if (isOnline) {
+          await supabase.from("orders").insert([order]);
+          showMessage("🎉 Commande envoyée avec succès!");
+        } else {
+          offlineOrders.push(order);
+          localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
+          showMessage("📱 Commande sauvegardée hors ligne.");
         }
+        form.reset();
+        preview.classList.remove("show");
+      } catch(err) {
+        console.error(err);
+        showMessage("❌ Erreur lors de l'envoi.", true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("loading");
+        btnText.textContent = "Envoyer Commande 🎂";
+      }
+    });
+  });
+</script>
 
-        productSelect.addEventListener('change', updateProductPreview);
-        quantityInput.addEventListener('input', updateProductPreview);
-
-        // Auto-format phone number
-        document.getElementById('phone').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.startsWith('216')) {
-                value = value.substring(3);
-            }
-            if (value.length >= 8) {
-                value = value.substring(0, 8);
-                e.target.value = `+216 ${value.substring(0, 2)} ${value.substring(2, 5)} ${value.substring(5)}`;
-            } else if (value.length >= 5) {
-                e.target.value = `+216 ${value.substring(0, 2)} ${value.substring(2, 5)} ${value.substring(5)}`;
-            } else if (value.length >= 2) {
-                e.target.value = `+216 ${value.substring(0, 2)} ${value.substring(2)}`;
-            } else if (value.length > 0) {
-                e.target.value = `+216 ${value}`;
-            }
-        });
-
-        // Form validation
-        function validateField(field) {
-            const errorElement = document.getElementById(`${field.name}-error`);
-            let isValid = true;
-            let errorMessage = '';
-
-            // Clear previous error
-            field.classList.remove('field-error');
-            errorElement.textContent = '';
-
-            // Required field validation
-            if (field.hasAttribute('required') && !field.value.trim()) {
-                errorMessage = 'Ce champ est requis';
-                isValid = false;
-            }
-            // Email validation
-            else if (field.type === 'email' && field.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value)) {
-                errorMessage = 'Format d\'email invalide';
-                isValid = false;
-            }
-            // Phone validation
-            else if (field.name === 'phone' && field.value && !/^\+216\s\d{2}\s\d{3}\s\d{3}$/.test(field.value)) {
-                errorMessage = 'Format: +216 XX XXX XXX';
-                isValid = false;
-            }
-            // Quantity validation
-            else if (field.name === 'quantity' && field.value && (parseFloat(field.value) <= 0 || parseFloat(field.value) > 100)) {
-                errorMessage = 'Quantité entre 0.1 et 100 kg';
-                isValid = false;
-            }
-
-            if (!isValid) {
-                field.classList.add('field-error');
-                errorElement.textContent = errorMessage;
-            }
-
-            return isValid;
-        }
-
-        // Real-time validation
-        form.querySelectorAll('input, select, textarea').forEach(field => {
-            field.addEventListener('blur', () => validateField(field));
-            field.addEventListener('input', () => {
-                if (field.classList.contains('field-error')) {
-                    validateField(field);
-                }
-            });
-        });
-
-        // Sync offline orders
-        async function syncOfflineOrders() {
-            if (!isOnline || offlineOrders.length === 0 || !supabase) return;
-
-            for (const order of offlineOrders) {
-                try {
-                    await submitOrderToSupabase(order);
-                    console.log('Synced offline order:', order.id);
-                } catch (error) {
-                    console.error('Failed to sync order:', error);
-                    break; // Stop syncing if one fails
-                }
-            }
-
-            // Clear synced orders
-            offlineOrders = [];
-            localStorage.setItem('offlineOrders', JSON.stringify(offlineOrders));
-        }
-
-        // Submit order to Supabase
-        async function submitOrderToSupabase(orderData) {
-            if (!supabase) {
-                throw new Error('Supabase not configured');
-            }
-
-            const { data, error } = await supabase
-                .from('orders')
-                .insert([orderData])
-                .select();
-
-            if (error) throw error;
-            return data;
-        }
-
-        // Show message
-        function showMessage(message, isError = false) {
-            globalMessage.innerHTML = `
-                <div class="${isError ? 'error-message-global' : 'success-message'}">
-                    ${message}
-                </div>
-            `;
-
-            setTimeout(() => {
-                globalMessage.innerHTML = '';
-            }, 5000);
-        }
-
-        // Form submission
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            // Validate all fields
-            let isFormValid = true;
-            form.querySelectorAll('input[required], select[required]').forEach(field => {
-                if (!validateField(field)) {
-                    isFormValid = false;
-                }
-            });
-
-            if (!isFormValid) {
-                showMessage('Veuillez corriger les erreurs dans le formulaire', true);
-                return;
-            }
-
-            // Show loading state
-            submitBtn.disabled = true;
-            submitBtn.classList.add('loading');
-            btnText.textContent = 'Envoi en cours...';
-
-            try {
-                // Prepare order data
-                const formData = new FormData(form);
-                const selectedProduct = productSelect.options[productSelect.selectedIndex];
-                const productPrice = parseFloat(selectedProduct.dataset.price);
-                const quantity = parseFloat(formData.get('quantity'));
-                
-                const orderData = {
-                    id: Date.now().toString(), // Temporary ID for offline storage
-                    customer_name: formData.get('customerName'),
-                    email: formData.get('email') || null,
-                    phone: formData.get('phone'),
-                    product: formData.get('product'),
-                    product_name: selectedProduct.text.split(' - ')[0],
-                    quantity: quantity,
-                    price_per_kg: productPrice,
-                    total_price: (productPrice * quantity).toFixed(2),
-                    notes: formData.get('notes') || null,
-                    status: 'pending',
-                    created_at: new Date().toISOString()
-                };
-
-                if (isOnline && supabase) {
-                    // Submit online
-                    await submitOrderToSupabase(orderData);
-                    showMessage('🎉 Commande envoyée avec succès! Nous vous contacterons bientôt.');
-                } else {
-                    // Store offline
-                    offlineOrders.push(orderData);
-                    localStorage.setItem('offlineOrders', JSON.stringify(offlineOrders));
-                    showMessage('📱 Commande sauvegardée hors ligne. Elle sera envoyée dès que la connexion sera rétablie.');
-                }
-
-                // Reset form
-                form.reset();
-                productPreview.classList.remove('show');
-
-            } catch (error) {
-                console.error('Error submitting order:', error);
-                showMessage('❌ Erreur lors de l\'envoi. Veuillez réessayer.', true);
-            } finally {
-                // Reset button state
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('loading');
-                btnText.textContent = 'Envoyer Commande 🎂';
-            }
-        });
-
-        // Handle page visibility for sync
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && isOnline) {
-                syncOfflineOrders();
-            }
-        });
-
-        console.log('7loww Order Form initialized');
-    </script>
 </body>
 </html>
