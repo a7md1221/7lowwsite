@@ -56,6 +56,7 @@
             position: relative;
             overflow-x: hidden;
             line-height: 1.6;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         body::before {
@@ -66,16 +67,18 @@
             width: 200%;
             height: 200%;
             background-image: 
-                radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(245, 213, 208, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(210, 180, 140, 0.1) 0%, transparent 50%);
-            animation: float 20s ease-in-out infinite;
+                radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(245, 213, 208, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 40% 80%, rgba(210, 180, 140, 0.06) 0%, transparent 40%),
+                linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.02) 50%, transparent 70%);
+            animation: subtleFloat 25s ease-in-out infinite;
             z-index: -1;
         }
 
-        @keyframes float {
+        @keyframes subtleFloat {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(2deg); }
+            33% { transform: translateY(-8px) rotate(0.5deg); }
+            66% { transform: translateY(4px) rotate(-0.3deg); }
         }
 
         .container {
@@ -94,21 +97,17 @@
             font-family: 'Playfair Display', serif;
             font-size: 3.5rem;
             font-weight: 700;
-            color: var(--gold);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, var(--gold) 0%, #C8AA2E 50%, var(--warm-brown) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: var(--spacing-sm);
             position: relative;
             line-height: 1.2;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
         }
 
-        .logo::after {
-            content: '🧁';
-            position: absolute;
-            top: -10px;
-            right: -40px;
-            font-size: 2rem;
-            animation: bounce 2s infinite;
-        }
+
 
         .subtitle {
             font-size: 1.2rem;
@@ -117,55 +116,49 @@
             margin-top: var(--spacing-sm);
         }
 
-        .dashboard-link {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--gold);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius-sm);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
 
-        .dashboard-link:hover {
-            background: var(--warm-brown);
-            transform: translateY(-2px);
-        }
 
         .form-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px);
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(20px);
             border-radius: var(--radius-xl);
             padding: var(--spacing-4xl);
             box-shadow: 
-                0 20px 40px rgba(0,0,0,0.1),
-                inset 0 1px 0 rgba(255,255,255,0.6);
-            border: 2px solid rgba(212, 175, 55, 0.2);
+                0 25px 50px rgba(0,0,0,0.08),
+                0 8px 16px rgba(212, 175, 55, 0.12),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            border: 1px solid rgba(212, 175, 55, 0.15);
             position: relative;
             animation: slideUp 1s ease-out;
+            overflow: hidden;
         }
 
         .form-card::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, var(--gold), var(--soft-pink), var(--gold));
-            border-radius: var(--radius-xl);
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0.6;
         }
 
-        .form-card:hover::before {
-            opacity: 0.3;
+        .form-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 40%, rgba(212, 175, 55, 0.03) 50%, transparent 60%);
+            animation: shimmer 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
         .form-title {
@@ -203,6 +196,53 @@
             margin-bottom: var(--spacing-xl);
         }
 
+        .form-group.floating-label {
+            margin-bottom: calc(var(--spacing-xl) + 0.5rem);
+        }
+
+        .floating-label label {
+            position: absolute;
+            left: var(--input-padding-x);
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(90, 64, 55, 0.6);
+            font-size: 1rem;
+            font-weight: 400;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            background: transparent;
+            padding: 0 0.25rem;
+        }
+
+        .floating-label label::after {
+            content: '';
+        }
+
+        .floating-label input:focus + label,
+        .floating-label input:not(:placeholder-shown) + label,
+        .floating-label input.has-value + label {
+            top: 0;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            color: var(--gold);
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0 0.5rem;
+        }
+
+        .floating-label input {
+            padding-top: calc(var(--input-padding-y) + 0.25rem);
+        }
+
+        .floating-label input::placeholder {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .floating-label input:focus::placeholder {
+            opacity: 0.5;
+        }
+
         .form-group.full-width {
             grid-column: 1 / -1;
         }
@@ -234,22 +274,31 @@
         input, select, textarea {
             width: 100%;
             padding: var(--input-padding-y) var(--input-padding-x);
-            border: 2px solid rgba(212, 175, 55, 0.3);
+            border: 2px solid rgba(212, 175, 55, 0.2);
             border-radius: var(--radius-md);
             font-size: 1rem;
             font-family: 'Inter', sans-serif;
-            background: rgba(255, 255, 255, 0.9);
-            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             color: var(--text-dark);
             line-height: 1.5;
+            min-height: 48px;
+            position: relative;
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--gold);
-            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
-            transform: translateY(-2px);
+            box-shadow: 
+                0 0 0 4px rgba(212, 175, 55, 0.12),
+                0 2px 8px rgba(212, 175, 55, 0.08);
+            transform: translateY(-1px);
             background: rgba(255, 255, 255, 1);
+        }
+
+        input:hover:not(:focus), select:hover:not(:focus), textarea:hover:not(:focus) {
+            border-color: rgba(212, 175, 55, 0.4);
+            box-shadow: 0 1px 4px rgba(212, 175, 55, 0.06);
         }
 
         input::placeholder, textarea::placeholder {
@@ -309,7 +358,7 @@
 
         .submit-btn {
             width: 100%;
-            background: linear-gradient(135deg, var(--gold) 0%, var(--warm-brown) 100%);
+            background: linear-gradient(135deg, var(--gold) 0%, #C8AA2E 50%, var(--warm-brown) 100%);
             color: white;
             border: none;
             padding: var(--spacing-lg) var(--spacing-xl);
@@ -317,12 +366,15 @@
             font-size: 1.2rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
             margin-top: var(--spacing-xl);
             line-height: 1.4;
             min-height: 56px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.25);
         }
 
         .submit-btn::before {
@@ -332,13 +384,14 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.6s ease;
         }
 
         .submit-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(212, 175, 55, 0.35);
+            filter: brightness(1.05);
         }
 
         .submit-btn:hover::before {
@@ -346,7 +399,8 @@
         }
 
         .submit-btn:active {
-            transform: translateY(-1px);
+            transform: translateY(0);
+            transition: transform 0.1s ease;
         }
 
         .submit-btn:disabled {
@@ -399,13 +453,14 @@
             top: 0;
             left: 0;
             right: 0;
-            background: var(--error-red);
+            background: var(--warning-orange);
             color: white;
             padding: var(--spacing-sm);
             text-align: center;
             z-index: 1000;
             transform: translateY(-100%);
             transition: transform 0.3s ease;
+            font-weight: 500;
         }
 
         .offline-banner.show {
@@ -415,22 +470,82 @@
         .product-preview {
             margin-top: var(--spacing-md);
             padding: var(--spacing-lg);
-            background: rgba(212, 175, 55, 0.1);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(245, 213, 208, 0.12) 100%);
             border-radius: var(--radius-md);
+            border: 1px solid rgba(212, 175, 55, 0.2);
             border-left: 4px solid var(--gold);
             display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .product-preview:hover::before {
+            opacity: 1;
         }
 
         .product-preview.show {
             display: block;
-            animation: slideIn 0.3s ease;
+            animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .price-estimate {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--gold);
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--warm-brown) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-top: var(--spacing-sm);
+        }
+
+        /* Success animation */
+        .success-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+            font-size: 4rem;
+            animation: successPulse 1s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes successPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+            }
         }
 
         @keyframes slideDown {
@@ -500,7 +615,10 @@
             }
 
             body {
-                padding: var(--spacing-sm) 0;
+                padding-top: max(20px, env(safe-area-inset-top));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+                padding-left: max(16px, env(safe-area-inset-left));
+                padding-right: max(16px, env(safe-area-inset-right));
             }
 
             .container {
@@ -526,12 +644,6 @@
                 margin-bottom: var(--spacing-md);
             }
 
-            .logo::after {
-                right: -35px;
-                font-size: 1.75rem;
-                top: -5px;
-            }
-
             .form-title {
                 font-size: 2.25rem;
                 margin-bottom: var(--spacing-lg);
@@ -555,14 +667,14 @@
             }
 
             input, select, textarea {
-                min-height: 48px;
-                font-size: 1rem;
+                min-height: 52px;
+                font-size: 16px; /* Prevents zoom on iOS */
                 -webkit-appearance: none;
                 border-radius: var(--radius-md);
             }
 
             .submit-btn {
-                min-height: 52px;
+                min-height: 56px;
                 font-size: 1.125rem;
                 padding: var(--spacing-lg) var(--spacing-xl);
                 border-radius: var(--radius-md);
@@ -582,6 +694,20 @@
 
             .quantity-container input {
                 padding-right: calc(var(--spacing-lg) + 2.5rem);
+            }
+
+
+        }
+
+        /* Touch improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .submit-btn:hover {
+                transform: none;
+                box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+            }
+            
+            .dashboard-link:hover {
+                transform: none;
             }
         }
 
@@ -611,39 +737,38 @@
     </style>
 </head>
 <body>
-    <a href="dashboard.html" class="dashboard-link">📊 Dashboard</a>
-    
+
     <div class="offline-banner" id="offlineBanner">
-        📶 Pas de connexion internet. Vos données seront sauvegardées localement.
+        📶 Mode hors ligne - Vos commandes seront synchronisées automatiquement
     </div>
 
     <div class="container">
         <div class="header">
             <h1 class="logo">7loww</h1>
-            <p class="subtitle">Pâtisserie Artisanale Tunisienne</p>
+            <p class="subtitle">Pâtisserie Tunisienne</p>
         </div>
 
         <div class="form-card">
             <h2 class="form-title">Passer Votre Commande</h2>
-            <p class="form-subtitle">Remplissez le formulaire ci-dessous pour soumettre votre commande. Tous les champs marqués d'un * sont obligatoires.</p>
+            <p class="form-subtitle">Tous les champs marqués d'un * sont obligatoires.</p>
 
             <form id="orderForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="customerName">Nom du Client</label>
-                        <input type="text" id="customerName" name="customerName" placeholder="Entrez votre nom complet" required>
+                        <label for="customerName">Nom Complet</label>
+                        <input type="text" id="customerName" name="customerName" placeholder="Entrez votre nom complet" required autocomplete="name">
                         <span class="error-message" id="customerName-error"></span>
                     </div>
                     <div class="form-group">
                         <label for="email" class="optional">Adresse Email</label>
-                        <input type="email" id="email" name="email" placeholder="votre@email.com">
+                        <input type="email" id="email" name="email" placeholder="votre@email.com" autocomplete="email">
                         <span class="error-message" id="email-error"></span>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="phone">Numéro de Téléphone</label>
-                    <input type="tel" id="phone" name="phone" placeholder="+216 XX XXX XXX" required>
+                    <input type="tel" id="phone" name="phone" placeholder="XX XXX XXX" required autocomplete="tel">
                     <span class="error-message" id="phone-error"></span>
                 </div>
 
@@ -694,23 +819,20 @@
 
     <script>
         window.addEventListener("DOMContentLoaded", () => {
-            // Wait for Supabase to load
+            // Initialize Supabase (optional for anonymous orders)
             let supabase = null;
             
-            // Try different ways to access Supabase
-            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-                supabase = window.supabase.createClient(
-                    "https://umoivfirzgwahcishhgo.supabase.co",
-                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
-                );
-            } else if (typeof supabase !== 'undefined' && supabase.createClient) {
-                supabase = supabase.createClient(
-                    "https://umoivfirzgwahcishhgo.supabase.co",
-                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
-                );
+            try {
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabase = window.supabase.createClient(
+                        "https://umoivfirzgwahcishhgo.supabase.co",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
+                    );
+                    console.log("Supabase initialized successfully");
+                }
+            } catch (error) {
+                console.warn("Supabase initialization failed:", error);
             }
-
-            console.log("Supabase client:", supabase);
 
             // DOM Elements
             const form = document.getElementById("orderForm");
@@ -741,7 +863,9 @@
             function updateOnlineStatus() {
                 isOnline = navigator.onLine;
                 offlineBanner.classList.toggle("show", !isOnline);
-                if (isOnline) syncOfflineOrders();
+                if (isOnline && offlineOrders.length > 0) {
+                    syncOfflineOrders();
+                }
             }
 
             window.addEventListener("online", updateOnlineStatus);
@@ -769,10 +893,26 @@
             productSelect.addEventListener("change", updatePreview);
             quantityInput.addEventListener("input", updatePreview);
 
+            // Success animation
+            function showSuccessAnimation() {
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success-animation';
+                successDiv.textContent = '🎉';
+                document.body.appendChild(successDiv);
+                
+                setTimeout(() => {
+                    document.body.removeChild(successDiv);
+                }, 1000);
+            }
+
             // Show message
             function showMessage(message, isError = false) {
                 const className = isError ? "error-message-global" : "success-message";
                 globalMessage.innerHTML = `<div class="${className}">${message}</div>`;
+                
+                if (!isError) {
+                    showSuccessAnimation();
+                }
                 
                 setTimeout(() => {
                     globalMessage.innerHTML = "";
@@ -783,9 +923,10 @@
             async function syncOfflineOrders() {
                 if (!isOnline || !supabase || offlineOrders.length === 0) return;
 
-                console.log("Syncing offline orders:", offlineOrders);
+                console.log("Syncing offline orders:", offlineOrders.length);
+                let syncedCount = 0;
 
-                for (const order of offlineOrders) {
+                for (const order of [...offlineOrders]) {
                     try {
                         const { error } = await supabase
                             .from("orders")
@@ -795,16 +936,21 @@
                             console.error("Sync failed for order:", order.id, error);
                             break;
                         }
+                        
+                        // Remove synced order from offline storage
+                        offlineOrders = offlineOrders.filter(o => o.id !== order.id);
+                        syncedCount++;
                     } catch (err) {
                         console.error("Sync error:", err);
                         break;
                     }
                 }
 
-                // Clear synced orders
-                offlineOrders = [];
-                localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
-                console.log("Offline orders synced successfully");
+                if (syncedCount > 0) {
+                    localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
+                    showMessage(`${syncedCount} commande(s) synchronisée(s) avec succès! 🎉`);
+                    console.log(`${syncedCount} offline orders synced successfully`);
+                }
             }
 
             // Form validation
@@ -828,10 +974,17 @@
                     }
                 });
 
-                // Email validation
+                // Email validation (only if provided)
                 const emailInput = document.getElementById('email');
                 if (emailInput.value && !isValidEmail(emailInput.value)) {
                     showFieldError('email', 'Format d\'email invalide');
+                    isValid = false;
+                }
+
+                // Phone validation
+                const phoneInput = document.getElementById('phone');
+                if (phoneInput.value && !isValidPhone(phoneInput.value)) {
+                    showFieldError('phone', 'Format de téléphone invalide');
                     isValid = false;
                 }
 
@@ -856,6 +1009,37 @@
             function isValidEmail(email) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailRegex.test(email);
+            }
+
+            function isValidPhone(phone) {
+                // Basic phone validation - accepts various formats
+                const phoneRegex = /^[\+]?[\d\s\-\(\)]{8,}$/;
+                return phoneRegex.test(phone.trim());
+            }
+
+            // Generate unique order ID
+            function generateOrderId() {
+                return `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            }
+
+            // Submit order directly without authentication
+            async function submitOrderDirect(orderData) {
+                if (!supabase) {
+                    throw new Error("Database not available");
+                }
+
+                // Try direct insert without authentication
+                const { data, error } = await supabase
+                    .from("orders")
+                    .insert([orderData])
+                    .select();
+
+                if (error) {
+                    console.error("Direct submission error:", error);
+                    throw error;
+                }
+
+                return data;
             }
 
             // Form submit handler
@@ -885,7 +1069,7 @@
 
                     // Create order object
                     const order = {
-                        id: Date.now().toString(),
+                        id: generateOrderId(),
                         customer_name: formData.get("customerName").trim(),
                         email: formData.get("email")?.trim() || null,
                         phone: formData.get("phone").trim(),
@@ -902,19 +1086,18 @@
                     console.log("Order to submit:", order);
 
                     if (isOnline && supabase) {
-                        // Submit online
-                        const { data, error } = await supabase
-                            .from("orders")
-                            .insert([order])
-                            .select();
-
-                        if (error) {
-                            console.error("Supabase error:", error);
-                            throw error;
+                        try {
+                            // Try direct submission first
+                            const data = await submitOrderDirect(order);
+                            console.log("Order submitted successfully:", data);
+                            showMessage("🎉 Commande envoyée avec succès! Merci pour votre confiance.");
+                        } catch (error) {
+                            console.warn("Direct submission failed, saving offline:", error);
+                            // Save offline if direct submission fails
+                            offlineOrders.push(order);
+                            localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
+                            showMessage("📱 Commande sauvegardée! Elle sera envoyée dès que possible.");
                         }
-
-                        console.log("Order submitted successfully:", data);
-                        showMessage("🎉 Commande envoyée avec succès! Merci pour votre confiance.");
                     } else {
                         // Save offline
                         offlineOrders.push(order);
@@ -939,10 +1122,16 @@
                 }
             });
 
+            // Auto-sync on page load if online
+            if (isOnline && offlineOrders.length > 0) {
+                setTimeout(syncOfflineOrders, 1000);
+            }
+
             // Initialize
-            console.log("Order form initialized");
-            console.log("Supabase client:", supabase);
+            console.log("Enhanced order form initialized");
+            console.log("Supabase client:", !!supabase);
             console.log("Online status:", isOnline);
+            console.log("Offline orders:", offlineOrders.length);
         });
     </script>
 </body>
