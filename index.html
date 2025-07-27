@@ -107,16 +107,12 @@
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
         }
 
-
-
         .subtitle {
             font-size: 1.2rem;
             color: var(--warm-brown);
             font-weight: 300;
             margin-top: var(--spacing-sm);
         }
-
-
 
         .form-card {
             background: rgba(255, 255, 255, 0.97);
@@ -695,8 +691,6 @@
             .quantity-container input {
                 padding-right: calc(var(--spacing-lg) + 2.5rem);
             }
-
-
         }
 
         /* Touch improvements */
@@ -819,7 +813,7 @@
 
     <script>
         window.addEventListener("DOMContentLoaded", () => {
-            // Initialize Supabase (optional for anonymous orders)
+            // Initialize Supabase
             let supabase = null;
             
             try {
@@ -1028,17 +1022,23 @@
                     throw new Error("Database not available");
                 }
 
-                // Try direct insert without authentication
+                console.log("Attempting to submit order:", orderData);
+
+                // Try direct insert to public table
                 const { data, error } = await supabase
                     .from("orders")
                     .insert([orderData])
                     .select();
 
                 if (error) {
-                    console.error("Direct submission error:", error);
+                    console.error("Database submission error:", error);
+                    console.error("Error code:", error.code);
+                    console.error("Error message:", error.message);
+                    console.error("Error details:", error.details);
                     throw error;
                 }
 
+                console.log("Order submitted successfully:", data);
                 return data;
             }
 
@@ -1069,7 +1069,6 @@
 
                     // Create order object
                     const order = {
-                        id: generateOrderId(),
                         customer_name: formData.get("customerName").trim(),
                         email: formData.get("email")?.trim() || null,
                         phone: formData.get("phone").trim(),
@@ -1087,38 +1086,80 @@
 
                     if (isOnline && supabase) {
                         try {
-                            // Try direct submission first
+                            // Try direct submission
                             const data = await submitOrderDirect(order);
                             console.log("Order submitted successfully:", data);
                             showMessage("🎉 Commande envoyée avec succès! Merci pour votre confiance.");
+                            
+                            // Reset form only on successful submission
+                            form.reset();
+                            preview.classList.remove("show");
+                            clearErrors();
+                            
                         } catch (error) {
-                            console.warn("Direct submission failed, saving offline:", error);
-                            // Save offline if direct submission fails
-                            offlineOrders.push(order);
-                            localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
-                            showMessage("📱 Commande sauvegardée! Elle sera envoyée dès que possible.");
+                            console.error("Direct submission failed:", error);
+                            
+                            // Check if it's a network/connection error
+                            if (error.message === "Database not available" || 
+                                error.message.includes("Failed to fetch") ||
+                                error.message.includes("NetworkError") ||
+                                error.message.includes("fetch")) {
+                                
+                                // Save offline for network issues
+                                const offlineOrder = { ...order, id: generateOrderId() };
+                                offlineOrders.push(offlineOrder);
+                                localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
+                                showMessage("📱 Commande sauvegardée! Elle sera envoyée dès que possible.");
+                                
+                                // Reset form
+                                form.reset();
+                                preview.classList.remove("show");
+                                clearErrors();
+                                
+                            } else if (error.message.includes("permission") || error.message.includes("RLS")) {
+                                // Database permission error
+                                showMessage("❌ Erreur de permissions de base de données. Contactez l'administrateur.", true);
+                            } else {
+                                // For other errors, throw to be caught by outer catch
+                                throw error;
+                            }
                         }
                     } else {
-                        // Save offline
-                        offlineOrders.push(order);
+                        // Save offline when not online
+                        const offlineOrder = { ...order, id: generateOrderId() };
+                        offlineOrders.push(offlineOrder);
                         localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
-                        console.log("Order saved offline:", order);
+                        console.log("Order saved offline:", offlineOrder);
                         showMessage("📱 Commande sauvegardée hors ligne. Elle sera envoyée dès que la connexion sera rétablie.");
+                        
+                        // Reset form
+                        form.reset();
+                        preview.classList.remove("show");
+                        clearErrors();
                     }
-
-                    // Reset form
-                    form.reset();
-                    preview.classList.remove("show");
-                    clearErrors();
 
                 } catch (error) {
                     console.error("Submit error:", error);
-                    showMessage("❌ Erreur lors de l'envoi de la commande. Veuillez réessayer.", true);
+                    
+                    // Show specific error message based on error type
+                    let errorMessage = "❌ Erreur lors de l'envoi de la commande. ";
+                    
+                    if (error.message.includes("permission") || error.message.includes("RLS")) {
+                        errorMessage += "Problème de permissions de base de données.";
+                    } else if (error.message.includes("network") || error.message.includes("fetch")) {
+                        errorMessage += "Problème de connexion réseau.";
+                    } else if (error.message.includes("PGRST")) {
+                        errorMessage += "Erreur de base de données - contactez l'administrateur.";
+                    } else {
+                        errorMessage += "Veuillez réessayer dans quelques instants.";
+                    }
+                    
+                    showMessage(errorMessage, true);
                 } finally {
                     // Reset loading state
                     submitBtn.disabled = false;
                     submitBtn.classList.remove("loading");
-                    btnText.textContent = "Envoyer Commande 🎂";
+                    btnText.textContent = "Envoyer Commande";
                 }
             });
 
