@@ -77,6 +77,12 @@
             box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
         }
 
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-secondary {
             background-color: transparent;
             border: 2px solid var(--gold);
@@ -572,6 +578,18 @@
             display: none !important;
         }
 
+        /* Loading spinner for login button */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .container {
@@ -647,8 +665,8 @@
             </div>
             <form id="login-form">
                 <div class="form-group">
-                    <label for="username">Nom d'utilisateur</label>
-                    <input type="text" id="username" placeholder="Votre nom d'utilisateur" required>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="votre@email.com" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Mot de passe</label>
@@ -658,7 +676,7 @@
                     <input type="checkbox" id="keep-connected" class="custom-checkbox">
                     <label for="keep-connected" style="cursor: pointer; font-size: 0.9rem;">Rester connecté</label>
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%;">
+                <button type="submit" class="btn-primary" style="width: 100%;" id="login-button">
                     Connexion
                 </button>
                 <p id="login-error" style="color: var(--danger-red); text-align: center; margin-top: 1rem;"></p>
@@ -758,33 +776,34 @@
         // Wait for DOM and Supabase to load
         let supabase = null;
         
-        // Try different ways to access Supabase
+        // Initialize Supabase
         function initializeSupabase() {
-            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-                supabase = window.supabase.createClient(
-                    "https://umoivfirzgwahcishhgo.supabase.co",
-                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
-                );
-            } else if (typeof supabase !== 'undefined' && supabase.createClient) {
-                supabase = supabase.createClient(
-                    "https://umoivfirzgwahcishhgo.supabase.co",
-                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
-                );
-            } else {
-                console.warn('Supabase not available, using mock data');
+            try {
+                if (window.supabase && window.supabase.createClient) {
+                    supabase = window.supabase.createClient(
+                        "https://umoivfirzgwahcishhgo.supabase.co",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
+                    );
+                    console.log('Supabase initialized successfully');
+                    return true;
+                } else {
+                    console.error('Supabase library not loaded');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error initializing Supabase:', error);
+                return false;
             }
-            return supabase;
         }
 
         // Initialize when DOM loads
         window.addEventListener('load', () => {
-            // Try to initialize Supabase
             setTimeout(() => {
-                supabase = initializeSupabase();
-                console.log('Supabase client:', supabase);
-                
-                // Now initialize the dashboard
-                init();
+                if (initializeSupabase()) {
+                    init();
+                } else {
+                    showNotification('Erreur de connexion à la base de données', true);
+                }
             }, 100);
         });
 
@@ -794,6 +813,7 @@
             const dashboardPage = document.getElementById('dashboard-page');
             const loginForm = document.getElementById('login-form');
             const loginError = document.getElementById('login-error');
+            const loginButton = document.getElementById('login-button');
             const logoutBtn = document.getElementById('logout-btn');
             const refreshBtn = document.getElementById('refresh-btn');
             const ordersContainer = document.getElementById('orders-container');
@@ -802,7 +822,6 @@
             const modalMessage = document.getElementById('modal-message');
             const modalConfirmBtn = document.getElementById('modal-confirm-btn');
             const modalCancelBtn = document.getElementById('modal-cancel-btn');
-            const keepConnectedCheckbox = document.getElementById('keep-connected');
             const usernameDisplay = document.getElementById('username-display');
             const notification = document.getElementById('notification');
             const statusFilter = document.getElementById('status-filter');
@@ -822,16 +841,8 @@
             let ordersSubscription = null;
             let onConfirmCallback = null;
 
-            // Authentication Configuration
-            const SELLER_CREDENTIALS = {
-                'admin': 'admin123',
-                'vendeur': 'vendeur123',
-                'manager': 'manager123'
-            };
-
             // Initialize
             console.log('Dashboard initializing...');
-            console.log('Supabase client:', supabase);
             checkExistingSession();
             setupEventListeners();
 
@@ -856,88 +867,125 @@
                 });
             }
 
-            function checkExistingSession() {
-                const sessionData = localStorage.getItem('7loww_session');
-                if (sessionData) {
-                    try {
-                        const session = JSON.parse(sessionData);
-                        if (session.username && session.timestamp && (Date.now() - session.timestamp < 24 * 60 * 60 * 1000)) {
-                            currentUser = session.username;
-                            showDashboard();
-                            return;
-                        }
-                    } catch (e) {
-                        localStorage.removeItem('7loww_session');
-                    }
-                }
-                
-                const tempSession = sessionStorage.getItem('7loww_temp_session');
-                if (tempSession) {
-                    try {
-                        const session = JSON.parse(tempSession);
-                        currentUser = session.username;
-                        showDashboard();
+            async function checkExistingSession() {
+                try {
+                    const { data: { session }, error } = await supabase.auth.getSession();
+                    
+                    if (error) {
+                        console.error('Session check error:', error);
                         return;
-                    } catch (e) {
-                        sessionStorage.removeItem('7loww_temp_session');
                     }
+
+                    if (session) {
+                        console.log('Existing session found:', session.user.email);
+                        currentUser = session.user;
+                        showDashboard();
+                    } else {
+                        console.log('No existing session');
+                    }
+                } catch (error) {
+                    console.error('Error checking session:', error);
                 }
             }
 
-            function handleLogin(e) {
+            async function handleLogin(e) {
                 e.preventDefault();
                 loginError.textContent = '';
                 
-                const username = document.getElementById('username').value;
+                const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
-                const keepConnected = keepConnectedCheckbox.checked;
 
-                console.log('Login attempt:', username);
+                if (!email || !password) {
+                    loginError.textContent = 'Veuillez remplir tous les champs.';
+                    return;
+                }
 
-                if (SELLER_CREDENTIALS[username] && SELLER_CREDENTIALS[username] === password) {
-                    currentUser = username;
+                // Show loading state
+                setLoginLoading(true);
+
+                try {
+                    console.log('Attempting login for:', email);
                     
-                    const sessionData = {
-                        username: username,
-                        timestamp: Date.now()
-                    };
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
 
-                    if (keepConnected) {
-                        localStorage.setItem('7loww_session', JSON.stringify(sessionData));
-                    } else {
-                        sessionStorage.setItem('7loww_temp_session', JSON.stringify(sessionData));
+                    if (error) {
+                        console.error('Login error:', error);
+                        
+                        // Handle specific error messages
+                        if (error.message.includes('Invalid login credentials')) {
+                            loginError.textContent = 'Email ou mot de passe incorrect.';
+                        } else if (error.message.includes('Email not confirmed')) {
+                            loginError.textContent = 'Veuillez confirmer votre email avant de vous connecter.';
+                        } else {
+                            loginError.textContent = error.message || 'Erreur de connexion.';
+                        }
+                        return;
                     }
 
-                    console.log('Login successful:', username);
-                    showDashboard();
-                    showNotification('Connexion réussie!');
-                } else {
-                    loginError.textContent = "Nom d'utilisateur ou mot de passe incorrect.";
-                    console.log('Login failed for:', username);
+                    if (data.user) {
+                        console.log('Login successful:', data.user.email);
+                        currentUser = data.user;
+                        showDashboard();
+                        showNotification('Connexion réussie!');
+                    }
+
+                } catch (error) {
+                    console.error('Unexpected login error:', error);
+                    loginError.textContent = 'Une erreur inattendue s\'est produite.';
+                } finally {
+                    setLoginLoading(false);
                 }
             }
 
-            function logout() {
-                console.log('Logging out...');
-                currentUser = null;
-                localStorage.removeItem('7loww_session');
-                sessionStorage.removeItem('7loww_temp_session');
-                
-                if (ordersSubscription) {
-                    ordersSubscription.unsubscribe();
-                    ordersSubscription = null;
+            function setLoginLoading(loading) {
+                loginButton.disabled = loading;
+                if (loading) {
+                    loginButton.innerHTML = '<span class="loading-spinner"></span>Connexion...';
+                } else {
+                    loginButton.innerHTML = 'Connexion';
                 }
-                
-                loginPage.classList.remove('hidden');
-                dashboardPage.classList.add('hidden');
-                loginForm.reset();
-                orders = [];
-                filteredOrders = [];
+            }
+
+            async function logout() {
+                try {
+                    console.log('Logging out...');
+                    
+                    const { error } = await supabase.auth.signOut();
+                    
+                    if (error) {
+                        console.error('Logout error:', error);
+                        showNotification('Erreur lors de la déconnexion', true);
+                        return;
+                    }
+
+                    currentUser = null;
+                    
+                    if (ordersSubscription) {
+                        ordersSubscription.unsubscribe();
+                        ordersSubscription = null;
+                    }
+                    
+                    loginPage.classList.remove('hidden');
+                    dashboardPage.classList.add('hidden');
+                    loginForm.reset();
+                    loginError.textContent = '';
+                    orders = [];
+                    filteredOrders = [];
+                    
+                    showNotification('Déconnexion réussie');
+                    
+                } catch (error) {
+                    console.error('Unexpected logout error:', error);
+                    showNotification('Erreur lors de la déconnexion', true);
+                }
             }
 
             function showDashboard() {
-                console.log('Showing dashboard for:', currentUser);
-                usernameDisplay.textContent = currentUser;
+                console.log('Showing dashboard for:', currentUser.email);
+                usernameDisplay.textContent = currentUser.email;
                 loginPage.classList.add('hidden');
                 dashboardPage.classList.remove('hidden');
                 loadOrders();
@@ -1322,3 +1370,6 @@
         }
 
         console.log('7loww Seller Dashboard script loaded');
+    </script>
+</body>
+</html>
