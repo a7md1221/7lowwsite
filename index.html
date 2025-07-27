@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#D4AF37">
     <title>7loww - Passer Votre Commande</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
         
@@ -115,6 +115,26 @@
             color: var(--warm-brown);
             font-weight: 300;
             margin-top: var(--spacing-sm);
+        }
+
+        .dashboard-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--gold);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .dashboard-link:hover {
+            background: var(--warm-brown);
+            transform: translateY(-2px);
         }
 
         .form-card {
@@ -591,6 +611,8 @@
     </style>
 </head>
 <body>
+    <a href="dashboard.html" class="dashboard-link">📊 Dashboard</a>
+    
     <div class="offline-banner" id="offlineBanner">
         📶 Pas de connexion internet. Vos données seront sauvegardées localement.
     </div>
@@ -670,133 +692,258 @@
         </div>
     </div>
 
- <script>
-  window.addEventListener("DOMContentLoaded", () => {
-    // 1) Init Supabase
-    const supabaseUrl = "https://umoivfirzgwahcishhgo.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4";
-    const supabase    = supabase.createClient(supabaseUrl, supabaseKey);
-    console.log("🚀 supabase:", supabase);
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            // Wait for Supabase to load
+            let supabase = null;
+            
+            // Try different ways to access Supabase
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                supabase = window.supabase.createClient(
+                    "https://umoivfirzgwahcishhgo.supabase.co",
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
+                );
+            } else if (typeof supabase !== 'undefined' && supabase.createClient) {
+                supabase = supabase.createClient(
+                    "https://umoivfirzgwahcishhgo.supabase.co",
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
+                );
+            }
 
-    // 2) Grab elements
-    const form           = document.getElementById("orderForm");
-    const globalMessage  = document.getElementById("globalMessage");
-    const submitBtn      = document.getElementById("submitBtn");
-    const btnText        = submitBtn.querySelector(".btn-text");
-    const productSelect  = document.getElementById("product");
-    const quantityInput  = document.getElementById("quantity");
-    const offlineBanner  = document.getElementById("offlineBanner");
-    const preview        = document.getElementById("productPreview");
-    const details        = document.getElementById("previewDetails");
-    const priceEstimate  = document.getElementById("priceEstimate");
-    let   isOnline       = navigator.onLine;
-    let   offlineOrders  = JSON.parse(localStorage.getItem("offlineOrders") || "[]");
+            console.log("Supabase client:", supabase);
 
-    // 3) Utility: show/hide offline banner & sync
-    function updateOnlineStatus() {
-      isOnline = navigator.onLine;
-      offlineBanner.classList.toggle("show", !isOnline);
-      if (isOnline) syncOfflineOrders();
-    }
-    window.addEventListener("online",  updateOnlineStatus);
-    window.addEventListener("offline", updateOnlineStatus);
-    updateOnlineStatus();
+            // DOM Elements
+            const form = document.getElementById("orderForm");
+            const globalMessage = document.getElementById("globalMessage");
+            const submitBtn = document.getElementById("submitBtn");
+            const btnText = submitBtn.querySelector(".btn-text");
+            const productSelect = document.getElementById("product");
+            const quantityInput = document.getElementById("quantity");
+            const offlineBanner = document.getElementById("offlineBanner");
+            const preview = document.getElementById("productPreview");
+            const details = document.getElementById("previewDetails");
+            const priceEstimate = document.getElementById("priceEstimate");
 
-    // 4) Preview handler
-    function updatePreview() {
-      const opt = productSelect.selectedOptions[0];
-      const qty = parseFloat(quantityInput.value) || 0;
-      if (opt.value && qty > 0) {
-        const name = opt.text.split(" - ")[0];
-        const price = parseFloat(opt.dataset.price);
-        details.textContent     = `${name} × ${qty}kg`;
-        priceEstimate.textContent = `Prix estimé: ${(price*qty).toFixed(2)} DT`;
-        preview.classList.add("show");
-      } else {
-        preview.classList.remove("show");
-      }
-    }
-    productSelect.addEventListener("change", updatePreview);
-    quantityInput.addEventListener("input", updatePreview);
+            let isOnline = navigator.onLine;
+            let offlineOrders = JSON.parse(localStorage.getItem("offlineOrders") || "[]");
 
-    // 5) Simple validator & messaging
-    function showMessage(msg, isError=false) {
-      globalMessage.innerHTML = `<div class="${isError?"error-message-global":"success-message"}">${msg}</div>`;
-      setTimeout(() => globalMessage.innerHTML = "", 5000);
-    }
+            // Clear error messages
+            function clearErrors() {
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.textContent = '';
+                });
+                document.querySelectorAll('.field-error').forEach(el => {
+                    el.classList.remove('field-error');
+                });
+            }
 
-    // 6) Sync offline
-    async function syncOfflineOrders() {
-      if (!isOnline || !supabase || offlineOrders.length===0) return;
-      for (let o of offlineOrders) {
-        try { await supabase.from("orders").insert([o]); }
-        catch(e){ console.error("Sync failed",e); break; }
-      }
-      offlineOrders = [];
-      localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
-    }
+            // Online/offline status
+            function updateOnlineStatus() {
+                isOnline = navigator.onLine;
+                offlineBanner.classList.toggle("show", !isOnline);
+                if (isOnline) syncOfflineOrders();
+            }
 
-    // 7) Form submit
-    form.addEventListener("submit", async e => {
-      e.preventDefault();
+            window.addEventListener("online", updateOnlineStatus);
+            window.addEventListener("offline", updateOnlineStatus);
+            updateOnlineStatus();
 
-      // Basic required check
-      const fields = form.querySelectorAll("input[required], select[required]");
-      let valid = true;
-      fields.forEach(f => {
-        if (!f.value.trim()) {
-          valid = false;
-          document.getElementById(f.name+"-error").textContent = "Ce champ est requis";
-        }
-      });
-      if (!valid) { showMessage("Veuillez corriger les erreurs", true); return; }
+            // Preview handler
+            function updatePreview() {
+                const selectedOption = productSelect.selectedOptions[0];
+                const quantity = parseFloat(quantityInput.value) || 0;
+                
+                if (selectedOption && selectedOption.value && quantity > 0) {
+                    const productName = selectedOption.text.split(" - ")[0];
+                    const price = parseFloat(selectedOption.dataset.price);
+                    const total = (price * quantity).toFixed(2);
+                    
+                    details.textContent = `${productName} × ${quantity}kg`;
+                    priceEstimate.textContent = `Prix estimé: ${total} DT`;
+                    preview.classList.add("show");
+                } else {
+                    preview.classList.remove("show");
+                }
+            }
 
-      // Loading state
-      submitBtn.disabled = true;
-      submitBtn.classList.add("loading");
-      btnText.textContent = "Envoi en cours...";
+            productSelect.addEventListener("change", updatePreview);
+            quantityInput.addEventListener("input", updatePreview);
 
-      // Build order
-      const data = new FormData(form);
-      const opt  = productSelect.selectedOptions[0];
-      const qty  = parseFloat(data.get("quantity"));
-      const order = {
-        id: Date.now().toString(),
-        customer_name: data.get("customerName"),
-        email: data.get("email")||null,
-        phone: data.get("phone"),
-        product: data.get("product"),
-        product_name: opt.text.split(" - ")[0],
-        quantity: qty,
-        price_per_kg: parseFloat(opt.dataset.price),
-        total_price: (parseFloat(opt.dataset.price)*qty).toFixed(2),
-        notes: data.get("notes")||null,
-        status: "pending",
-        created_at: new Date().toISOString()
-      };
+            // Show message
+            function showMessage(message, isError = false) {
+                const className = isError ? "error-message-global" : "success-message";
+                globalMessage.innerHTML = `<div class="${className}">${message}</div>`;
+                
+                setTimeout(() => {
+                    globalMessage.innerHTML = "";
+                }, 5000);
+            }
 
-      try {
-        if (isOnline) {
-          await supabase.from("orders").insert([order]);
-          showMessage("🎉 Commande envoyée avec succès!");
-        } else {
-          offlineOrders.push(order);
-          localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
-          showMessage("📱 Commande sauvegardée hors ligne.");
-        }
-        form.reset();
-        preview.classList.remove("show");
-      } catch(err) {
-        console.error(err);
-        showMessage("❌ Erreur lors de l'envoi.", true);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.classList.remove("loading");
-        btnText.textContent = "Envoyer Commande 🎂";
-      }
-    });
-  });
-</script>
+            // Sync offline orders
+            async function syncOfflineOrders() {
+                if (!isOnline || !supabase || offlineOrders.length === 0) return;
 
+                console.log("Syncing offline orders:", offlineOrders);
+
+                for (const order of offlineOrders) {
+                    try {
+                        const { error } = await supabase
+                            .from("orders")
+                            .insert([order]);
+
+                        if (error) {
+                            console.error("Sync failed for order:", order.id, error);
+                            break;
+                        }
+                    } catch (err) {
+                        console.error("Sync error:", err);
+                        break;
+                    }
+                }
+
+                // Clear synced orders
+                offlineOrders = [];
+                localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
+                console.log("Offline orders synced successfully");
+            }
+
+            // Form validation
+            function validateForm() {
+                clearErrors();
+                let isValid = true;
+
+                // Required fields
+                const requiredFields = [
+                    { field: 'customerName', message: 'Le nom du client est requis' },
+                    { field: 'phone', message: 'Le numéro de téléphone est requis' },
+                    { field: 'product', message: 'Veuillez sélectionner un produit' },
+                    { field: 'quantity', message: 'La quantité est requise' }
+                ];
+
+                requiredFields.forEach(({ field, message }) => {
+                    const input = document.getElementById(field);
+                    if (!input.value || input.value.trim() === '') {
+                        showFieldError(field, message);
+                        isValid = false;
+                    }
+                });
+
+                // Email validation
+                const emailInput = document.getElementById('email');
+                if (emailInput.value && !isValidEmail(emailInput.value)) {
+                    showFieldError('email', 'Format d\'email invalide');
+                    isValid = false;
+                }
+
+                // Quantity validation
+                const quantity = parseFloat(quantityInput.value);
+                if (quantityInput.value && (isNaN(quantity) || quantity <= 0)) {
+                    showFieldError('quantity', 'La quantité doit être supérieure à 0');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            function showFieldError(fieldName, message) {
+                const errorElement = document.getElementById(`${fieldName}-error`);
+                const inputElement = document.getElementById(fieldName);
+                
+                if (errorElement) errorElement.textContent = message;
+                if (inputElement) inputElement.classList.add('field-error');
+            }
+
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+
+            // Form submit handler
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                console.log("Form submitted");
+
+                // Validate form
+                if (!validateForm()) {
+                    showMessage("Veuillez corriger les erreurs dans le formulaire", true);
+                    return;
+                }
+
+                // Set loading state
+                submitBtn.disabled = true;
+                submitBtn.classList.add("loading");
+                btnText.textContent = "Envoi en cours...";
+
+                try {
+                    // Get form data
+                    const formData = new FormData(form);
+                    const selectedOption = productSelect.selectedOptions[0];
+                    const quantity = parseFloat(formData.get("quantity"));
+                    const pricePerKg = parseFloat(selectedOption.dataset.price);
+                    const totalPrice = (pricePerKg * quantity).toFixed(2);
+
+                    // Create order object
+                    const order = {
+                        id: Date.now().toString(),
+                        customer_name: formData.get("customerName").trim(),
+                        email: formData.get("email")?.trim() || null,
+                        phone: formData.get("phone").trim(),
+                        product: formData.get("product"),
+                        product_name: selectedOption.text.split(" - ")[0],
+                        quantity: quantity,
+                        price_per_kg: pricePerKg,
+                        total_price: parseFloat(totalPrice),
+                        notes: formData.get("notes")?.trim() || null,
+                        status: "pending",
+                        created_at: new Date().toISOString()
+                    };
+
+                    console.log("Order to submit:", order);
+
+                    if (isOnline && supabase) {
+                        // Submit online
+                        const { data, error } = await supabase
+                            .from("orders")
+                            .insert([order])
+                            .select();
+
+                        if (error) {
+                            console.error("Supabase error:", error);
+                            throw error;
+                        }
+
+                        console.log("Order submitted successfully:", data);
+                        showMessage("🎉 Commande envoyée avec succès! Merci pour votre confiance.");
+                    } else {
+                        // Save offline
+                        offlineOrders.push(order);
+                        localStorage.setItem("offlineOrders", JSON.stringify(offlineOrders));
+                        console.log("Order saved offline:", order);
+                        showMessage("📱 Commande sauvegardée hors ligne. Elle sera envoyée dès que la connexion sera rétablie.");
+                    }
+
+                    // Reset form
+                    form.reset();
+                    preview.classList.remove("show");
+                    clearErrors();
+
+                } catch (error) {
+                    console.error("Submit error:", error);
+                    showMessage("❌ Erreur lors de l'envoi de la commande. Veuillez réessayer.", true);
+                } finally {
+                    // Reset loading state
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove("loading");
+                    btnText.textContent = "Envoyer Commande 🎂";
+                }
+            });
+
+            // Initialize
+            console.log("Order form initialized");
+            console.log("Supabase client:", supabase);
+            console.log("Online status:", isOnline);
+        });
+    </script>
 </body>
 </html>
