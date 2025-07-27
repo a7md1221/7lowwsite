@@ -21,10 +21,27 @@
             --light-brown: #D2B48C;
             --warm-brown: #8B7355;
             --text-dark: #5A4037;
-            --success-green: #82C341;
-            --danger-red: #E74C3C;
-            --warning-orange: #F39C12;
-            --info-blue: #3498DB;
+            
+            /* Pastel color palette */
+            --pastel-success: #A8E6A3;
+            --pastel-success-hover: #8FDB88;
+            --pastel-success-text: #2D5029;
+            
+            --pastel-warning: #FFE4B5;
+            --pastel-warning-hover: #FFDAA0;
+            --pastel-warning-text: #8B6914;
+            
+            --pastel-danger: #FFB3BA;
+            --pastel-danger-hover: #FF9CA5;
+            --pastel-danger-text: #8B1538;
+            
+            --pastel-info: #B3D9FF;
+            --pastel-info-hover: #9CCCFF;
+            --pastel-info-text: #1A4A72;
+            
+            --pastel-purple: #E4C7F7;
+            --pastel-purple-hover: #D9B3F2;
+            --pastel-purple-text: #5D2E70;
         }
 
         * {
@@ -113,29 +130,48 @@
             transform: translateY(-2px);
         }
 
+        /* Enhanced pastel buttons */
         .btn-success {
-            background: var(--success-green);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
+            background: linear-gradient(135deg, var(--pastel-success) 0%, var(--pastel-success-hover) 100%);
+            color: var(--pastel-success-text);
+            border: 1px solid rgba(168, 230, 163, 0.3);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
-            min-height: 40px;
+            min-height: 44px;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             justify-content: center;
+            box-shadow: 0 4px 12px rgba(168, 230, 163, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-success::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
         }
 
         .btn-success:hover {
-            background: #6da635;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(130, 195, 65, 0.3);
+            background: linear-gradient(135deg, var(--pastel-success-hover) 0%, var(--pastel-success) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 230, 163, 0.4);
+        }
+
+        .btn-success:hover::before {
+            left: 100%;
         }
 
         .btn-success:active {
@@ -143,28 +179,46 @@
         }
 
         .btn-danger {
-            background: var(--danger-red);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
+            background: linear-gradient(135deg, var(--pastel-danger) 0%, var(--pastel-danger-hover) 100%);
+            color: var(--pastel-danger-text);
+            border: 1px solid rgba(255, 179, 186, 0.3);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
-            min-height: 40px;
+            min-height: 44px;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 179, 186, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-danger::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
         }
 
         .btn-danger:hover {
-            background: #c0392b;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+            background: linear-gradient(135deg, var(--pastel-danger-hover) 0%, var(--pastel-danger) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 179, 186, 0.4);
+        }
+
+        .btn-danger:hover::before {
+            left: 100%;
         }
 
         .btn-danger:active {
@@ -172,28 +226,46 @@
         }
 
         .btn-warning {
-            background: var(--warning-orange);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
+            background: linear-gradient(135deg, var(--pastel-warning) 0%, var(--pastel-warning-hover) 100%);
+            color: var(--pastel-warning-text);
+            border: 1px solid rgba(255, 228, 181, 0.3);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
-            min-height: 40px;
+            min-height: 44px;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 228, 181, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-warning::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
         }
 
         .btn-warning:hover {
-            background: #e67e22;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+            background: linear-gradient(135deg, var(--pastel-warning-hover) 0%, var(--pastel-warning) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 228, 181, 0.4);
+        }
+
+        .btn-warning:hover::before {
+            left: 100%;
         }
 
         .container {
@@ -432,110 +504,169 @@
 
         .orders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 2rem;
         }
 
+        /* Enhanced order card */
         .order-card {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 2px solid rgba(212, 175, 55, 0.2);
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 232, 232, 0.8) 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 2px solid rgba(212, 175, 55, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+        }
+
+        .order-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--pastel-success), var(--pastel-info), var(--gold));
+            opacity: 0.7;
+        }
+
+        .order-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 40%, rgba(212, 175, 55, 0.03) 50%, transparent 60%);
+            animation: shimmer 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
         .order-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
+            border-color: rgba(212, 175, 55, 0.3);
         }
 
         .order-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .order-id {
             font-size: 0.875rem;
             color: var(--warm-brown);
             opacity: 0.8;
-            font-weight: 500;
+            font-weight: 600;
+            background: rgba(212, 175, 55, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
         }
 
         .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            border: 2px solid;
         }
 
         .status-pending {
-            background: rgba(243, 156, 18, 0.2);
-            color: var(--warning-orange);
-            border: 1px solid var(--warning-orange);
+            background: linear-gradient(135deg, var(--pastel-warning), var(--pastel-warning-hover));
+            color: var(--pastel-warning-text);
+            border-color: var(--pastel-warning-hover);
         }
 
         .status-completed {
-            background: rgba(130, 195, 65, 0.2);
-            color: var(--success-green);
-            border: 1px solid var(--success-green);
+            background: linear-gradient(135deg, var(--pastel-success), var(--pastel-success-hover));
+            color: var(--pastel-success-text);
+            border-color: var(--pastel-success-hover);
         }
 
         .status-cancelled {
-            background: rgba(231, 76, 60, 0.2);
-            color: var(--danger-red);
-            border: 1px solid var(--danger-red);
+            background: linear-gradient(135deg, var(--pastel-danger), var(--pastel-danger-hover));
+            color: var(--pastel-danger-text);
+            border-color: var(--pastel-danger-hover);
         }
 
         .product-name {
-            font-size: 1.25rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--warm-brown);
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--warm-brown), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .order-details {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 1.25rem;
+            border-radius: 16px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
         }
 
         .detail-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            align-items: center;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
         }
 
         .detail-label {
             color: var(--warm-brown);
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .detail-value {
             color: var(--text-dark);
-            font-weight: 400;
+            font-weight: 500;
         }
 
         .order-notes {
-            background: rgba(212, 175, 55, 0.1);
-            padding: 0.75rem;
-            border-radius: 6px;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(245, 213, 208, 0.12));
+            padding: 1rem;
+            border-radius: 12px;
             border-left: 4px solid var(--gold);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             font-style: italic;
             color: var(--text-dark);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .order-notes::before {
+            content: '"';
+            position: absolute;
+            top: -0.5rem;
+            left: 0.5rem;
+            font-size: 2rem;
+            color: var(--gold);
+            opacity: 0.5;
         }
 
         .order-actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
         }
 
         .order-actions.single-column {
@@ -549,11 +680,12 @@
         .order-timestamp {
             font-size: 0.8rem;
             color: var(--warm-brown);
-            opacity: 0.7;
+            opacity: 0.8;
             margin-top: 1rem;
             padding-top: 1rem;
             border-top: 1px solid rgba(212, 175, 55, 0.2);
             text-align: center;
+            font-weight: 500;
         }
 
         .modal-backdrop {
@@ -617,8 +749,8 @@
             position: fixed;
             top: max(20px, env(safe-area-inset-top, 20px));
             right: max(20px, env(safe-area-inset-right, 20px));
-            background: var(--success-green);
-            color: white;
+            background: var(--pastel-success);
+            color: var(--pastel-success-text);
             padding: 1rem 1.5rem;
             border-radius: 8px;
             font-weight: 500;
@@ -634,7 +766,8 @@
         }
 
         .notification.error {
-            background: var(--danger-red);
+            background: var(--pastel-danger);
+            color: var(--pastel-danger-text);
         }
 
         .empty-state {
@@ -650,26 +783,28 @@
         }
 
         .refresh-btn {
-            background: var(--info-blue);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            background: linear-gradient(135deg, var(--pastel-info) 0%, var(--pastel-info-hover) 100%);
+            color: var(--pastel-info-text);
+            border: 1px solid rgba(179, 217, 255, 0.3);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
             font-size: 0.875rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            min-height: 40px;
+            min-height: 44px;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(179, 217, 255, 0.25);
         }
 
         .refresh-btn:hover {
-            background: #2980b9;
+            background: linear-gradient(135deg, var(--pastel-info-hover) 0%, var(--pastel-info) 100%);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 6px 20px rgba(179, 217, 255, 0.4);
         }
 
         .refresh-btn.loading {
@@ -681,9 +816,9 @@
             content: '';
             width: 12px;
             height: 12px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(26, 74, 114, 0.3);
             border-radius: 50%;
-            border-top-color: white;
+            border-top-color: var(--pastel-info-text);
             animation: spin 1s linear infinite;
         }
 
@@ -692,11 +827,11 @@
         }
 
         .error-message {
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--danger-red);
+            background: rgba(255, 179, 186, 0.2);
+            color: var(--pastel-danger-text);
             padding: 1rem;
             border-radius: 8px;
-            border: 1px solid var(--danger-red);
+            border: 1px solid var(--pastel-danger);
             margin-bottom: 1rem;
             text-align: center;
         }
@@ -806,12 +941,12 @@
             }
 
             .order-card {
-                padding: 1rem;
+                padding: 1.5rem;
             }
 
             .order-actions {
                 grid-template-columns: 1fr;
-                gap: 0.5rem;
+                gap: 0.75rem;
             }
 
             .order-actions.three-column {
@@ -905,7 +1040,7 @@
                 <button type="submit" class="btn-primary" style="width: 100%;" id="login-button">
                     Connexion
                 </button>
-                <p id="login-error" style="color: var(--danger-red); text-align: center; margin-top: 1rem;"></p>
+                <p id="login-error" style="color: var(--pastel-danger-text); text-align: center; margin-top: 1rem;"></p>
             </form>
         </div>
     </div>
@@ -1393,7 +1528,7 @@
                         <button onclick="updateOrderStatus('${order.id}', 'cancelled')" class="btn-danger">
                             ❌ Annuler
                         </button>
-                        <button onclick="deleteOrder('${order.id}')" class="btn-danger">
+                        <button onclick="deleteOrder('${order.id}')" class="btn-warning">
                             🗑️ Supprimer
                         </button>
                     `;
@@ -1425,11 +1560,11 @@
                     
                     <div class="order-details">
                         <div class="detail-row">
-                            <span class="detail-label">Client:</span>
+                            <span class="detail-label">👤 Client:</span>
                             <span class="detail-value">${order.customer_name}</span>
                         </div>
                         <div class="detail-row">
-                            <span class="detail-label">Téléphone:</span>
+                            <span class="detail-label">📞 Téléphone:</span>
                             <span class="detail-value">
                                 <a href="tel:${order.phone}" style="color: var(--gold); text-decoration: none;">
                                     ${order.phone}
@@ -1438,7 +1573,7 @@
                         </div>
                         ${order.email ? `
                             <div class="detail-row">
-                                <span class="detail-label">Email:</span>
+                                <span class="detail-label">📧 Email:</span>
                                 <span class="detail-value">
                                     <a href="mailto:${order.email}" style="color: var(--gold); text-decoration: none;">
                                         ${order.email}
@@ -1447,22 +1582,22 @@
                             </div>
                         ` : ''}
                         <div class="detail-row">
-                            <span class="detail-label">Quantité:</span>
+                            <span class="detail-label">⚖️ Quantité:</span>
                             <span class="detail-value">${order.quantity} kg</span>
                         </div>
                         <div class="detail-row">
-                            <span class="detail-label">Prix unitaire:</span>
+                            <span class="detail-label">💰 Prix unitaire:</span>
                             <span class="detail-value">${order.price_per_kg} DT/kg</span>
                         </div>
-                        <div class="detail-row" style="font-weight: 600; color: var(--gold);">
-                            <span class="detail-label">Total:</span>
+                        <div class="detail-row" style="font-weight: 700; color: var(--gold); font-size: 1.1rem;">
+                            <span class="detail-label">💎 Total:</span>
                             <span class="detail-value">${order.total_price} DT</span>
                         </div>
                     </div>
 
                     ${order.notes ? `
                         <div class="order-notes">
-                            💬 ${order.notes}
+                            ${order.notes}
                         </div>
                     ` : ''}
 
@@ -1522,9 +1657,12 @@
             }
 
             // Global functions for order actions
-            window.updateOrderStatus = function(orderId, newStatus) {
-                const order = orders.find(o => o.id === orderId);
-                if (!order) return;
+            window.updateOrderStatus = async function(orderId, newStatus) {
+                const order = orders.find(o => o.id == orderId);
+                if (!order) {
+                    console.error('Order not found:', orderId);
+                    return;
+                }
 
                 const statusText = {
                     'pending': 'en attente',
@@ -1537,6 +1675,8 @@
                     `Voulez-vous marquer cette commande comme ${statusText} ?`,
                     async () => {
                         try {
+                            console.log(`Updating order ${orderId} to ${newStatus}`);
+                            
                             const { error } = await supabase
                                 .from('orders')
                                 .update({ status: newStatus })
@@ -1548,7 +1688,7 @@
                             }
 
                             // Update local state
-                            const orderIndex = orders.findIndex(o => o.id === orderId);
+                            const orderIndex = orders.findIndex(o => o.id == orderId);
                             if (orderIndex !== -1) {
                                 orders[orderIndex].status = newStatus;
                             }
@@ -1565,12 +1705,14 @@
                 );
             };
 
-            window.deleteOrder = function(orderId) {
+            window.deleteOrder = async function(orderId) {
                 showConfirmationModal(
                     'Supprimer la commande',
                     'Êtes-vous sûr de vouloir supprimer cette commande ? Cette action est irréversible.',
                     async () => {
                         try {
+                            console.log(`Deleting order ${orderId}`);
+                            
                             const { error } = await supabase
                                 .from('orders')
                                 .delete()
@@ -1582,7 +1724,7 @@
                             }
 
                             // Update local state
-                            orders = orders.filter(o => o.id !== orderId);
+                            orders = orders.filter(o => o.id != orderId);
 
                             applyFilters();
                             updateStats();
