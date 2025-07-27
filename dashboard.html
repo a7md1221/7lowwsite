@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de Bord Vendeur - 7loww</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -41,28 +41,24 @@
             font-family: 'Playfair Display', serif;
         }
 
-        .bg-gold-gradient {
-            background: linear-gradient(135deg, var(--gold) 0%, var(--warm-brown) 100%);
+        .home-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--gold);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            z-index: 100;
         }
 
-        .ring-gold {
-            --tw-ring-color: var(--gold);
-        }
-
-        .text-gold {
-            color: var(--gold);
-        }
-
-        .text-warm-brown {
-            color: var(--warm-brown);
-        }
-
-        .border-gold-faded {
-            border-color: rgba(212, 175, 55, 0.3);
-        }
-
-        .shadow-gold-soft {
-            box-shadow: 0 12px 35px rgba(212, 175, 55, 0.2);
+        .home-link:hover {
+            background: var(--warm-brown);
+            transform: translateY(-2px);
         }
 
         .btn-primary {
@@ -572,6 +568,10 @@
             text-align: center;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .container {
@@ -633,20 +633,17 @@
                 flex-direction: column;
             }
         }
-
-        .hidden {
-            display: none !important;
-        }
     </style>
 </head>
 <body>
+    <a href="index.html" class="home-link">🏠 Retour</a>
 
     <!-- Page de Connexion -->
     <div id="login-page" class="login-container">
         <div class="card">
             <div style="text-align: center; margin-bottom: 2rem;">
-                <h1 class="font-playfair text-gold" style="font-size: 2.5rem; margin-bottom: 0.5rem;">7loww</h1>
-                <p class="text-warm-brown">Connexion au tableau de bord vendeur</p>
+                <h1 class="font-playfair" style="color: var(--gold); font-size: 2.5rem; margin-bottom: 0.5rem;">7loww</h1>
+                <p style="color: var(--warm-brown);">Connexion au tableau de bord vendeur</p>
             </div>
             <form id="login-form">
                 <div class="form-group">
@@ -676,7 +673,7 @@
                 <div class="header">
                     <div>
                         <h1 class="font-playfair">Tableau de bord 7loww</h1>
-                        <p class="text-warm-brown">Bienvenue <span id="username-display" class="text-gold font-weight-600"></span>! Voici vos commandes.</p>
+                        <p style="color: var(--warm-brown);">Bienvenue <span id="username-display" style="color: var(--gold); font-weight: 600;"></span>! Voici vos commandes.</p>
                     </div>
                     <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                         <button id="refresh-btn" class="refresh-btn">
@@ -758,523 +755,570 @@
     <div id="notification" class="notification"></div>
 
     <script>
-        // Initialize Supabase
-        const supabaseUrl = https://umoivfirzgwahcishhgo.supabase.co ;
-        const supabaseKey = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4;
-        const supabase = window.supabase?.createClient(supabaseUrl, supabaseKey);
-
-        // DOM Elements
-        const loginPage = document.getElementById('login-page');
-        const dashboardPage = document.getElementById('dashboard-page');
-        const loginForm = document.getElementById('login-form');
-        const loginError = document.getElementById('login-error');
-        const logoutBtn = document.getElementById('logout-btn');
-        const refreshBtn = document.getElementById('refresh-btn');
-        const ordersContainer = document.getElementById('orders-container');
-        const confirmationModal = document.getElementById('confirmation-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
-        const modalCancelBtn = document.getElementById('modal-cancel-btn');
-        const keepConnectedCheckbox = document.getElementById('keep-connected');
-        const usernameDisplay = document.getElementById('username-display');
-        const notification = document.getElementById('notification');
-        const statusFilter = document.getElementById('status-filter');
-        const productFilter = document.getElementById('product-filter');
-        const searchBox = document.getElementById('search-box');
-
-        // Stats elements
-        const totalOrdersEl = document.getElementById('total-orders');
-        const pendingOrdersEl = document.getElementById('pending-orders');
-        const completedOrdersEl = document.getElementById('completed-orders');
-        const totalRevenueEl = document.getElementById('total-revenue');
-
-        // State
-        let currentUser = null;
-        let orders = [];
-        let filteredOrders = [];
-        let ordersSubscription = null;
-        let onConfirmCallback = null;
-
-        // Authentication Configuration
-        const SELLER_CREDENTIALS = {
-            'admin': 'admin123',
-            'vendeur': 'vendeur123',
-            'manager': 'manager123'
-        };
-
-        // Initialize
-        window.addEventListener('load', () => {
-            checkExistingSession();
-            setupEventListeners();
-        });
-
-        function setupEventListeners() {
-            // Login form
-            loginForm.addEventListener('submit', handleLogin);
-            logoutBtn.addEventListener('click', logout);
-            refreshBtn.addEventListener('click', refreshOrders);
-
-            // Filters
-            statusFilter.addEventListener('change', applyFilters);
-            productFilter.addEventListener('change', applyFilters);
-            searchBox.addEventListener('input', debounce(applyFilters, 300));
-
-            // Modal
-            modalConfirmBtn.addEventListener('click', handleModalConfirm);
-            modalCancelBtn.addEventListener('click', hideConfirmationModal);
-            confirmationModal.addEventListener('click', (e) => {
-                if (e.target === confirmationModal) {
-                    hideConfirmationModal();
-                }
-            });
+        // Wait for DOM and Supabase to load
+        let supabase = null;
+        
+        // Try different ways to access Supabase
+        function initializeSupabase() {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                supabase = window.supabase.createClient(
+                    "https://umoivfirzgwahcishhgo.supabase.co",
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
+                );
+            } else if (typeof supabase !== 'undefined' && supabase.createClient) {
+                supabase = supabase.createClient(
+                    "https://umoivfirzgwahcishhgo.supabase.co",
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtb2l2Zmlyemd3YWhjaXNoaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MzcwMjEsImV4cCI6MjA2OTAxMzAyMX0.VTC-rwzrlaMvlz7bEgP6tdhnXKZ23AkZRx-xtOk7KE4"
+                );
+            } else {
+                console.warn('Supabase not available, using mock data');
+            }
+            return supabase;
         }
 
-        function checkExistingSession() {
-            const sessionData = localStorage.getItem('7loww_session');
-            if (sessionData) {
-                try {
-                    const session = JSON.parse(sessionData);
-                    if (session.username && session.timestamp && (Date.now() - session.timestamp < 24 * 60 * 60 * 1000)) {
+        // Initialize when DOM loads
+        window.addEventListener('load', () => {
+            // Try to initialize Supabase
+            setTimeout(() => {
+                supabase = initializeSupabase();
+                console.log('Supabase client:', supabase);
+                
+                // Now initialize the dashboard
+                init();
+            }, 100);
+        });
+
+        function init() {
+            // DOM Elements
+            const loginPage = document.getElementById('login-page');
+            const dashboardPage = document.getElementById('dashboard-page');
+            const loginForm = document.getElementById('login-form');
+            const loginError = document.getElementById('login-error');
+            const logoutBtn = document.getElementById('logout-btn');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const ordersContainer = document.getElementById('orders-container');
+            const confirmationModal = document.getElementById('confirmation-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+            const modalCancelBtn = document.getElementById('modal-cancel-btn');
+            const keepConnectedCheckbox = document.getElementById('keep-connected');
+            const usernameDisplay = document.getElementById('username-display');
+            const notification = document.getElementById('notification');
+            const statusFilter = document.getElementById('status-filter');
+            const productFilter = document.getElementById('product-filter');
+            const searchBox = document.getElementById('search-box');
+
+            // Stats elements
+            const totalOrdersEl = document.getElementById('total-orders');
+            const pendingOrdersEl = document.getElementById('pending-orders');
+            const completedOrdersEl = document.getElementById('completed-orders');
+            const totalRevenueEl = document.getElementById('total-revenue');
+
+            // State
+            let currentUser = null;
+            let orders = [];
+            let filteredOrders = [];
+            let ordersSubscription = null;
+            let onConfirmCallback = null;
+
+            // Authentication Configuration
+            const SELLER_CREDENTIALS = {
+                'admin': 'admin123',
+                'vendeur': 'vendeur123',
+                'manager': 'manager123'
+            };
+
+            // Initialize
+            console.log('Dashboard initializing...');
+            console.log('Supabase client:', supabase);
+            checkExistingSession();
+            setupEventListeners();
+
+            function setupEventListeners() {
+                // Login form
+                loginForm.addEventListener('submit', handleLogin);
+                logoutBtn.addEventListener('click', logout);
+                refreshBtn.addEventListener('click', refreshOrders);
+
+                // Filters
+                statusFilter.addEventListener('change', applyFilters);
+                productFilter.addEventListener('change', applyFilters);
+                searchBox.addEventListener('input', debounce(applyFilters, 300));
+
+                // Modal
+                modalConfirmBtn.addEventListener('click', handleModalConfirm);
+                modalCancelBtn.addEventListener('click', hideConfirmationModal);
+                confirmationModal.addEventListener('click', (e) => {
+                    if (e.target === confirmationModal) {
+                        hideConfirmationModal();
+                    }
+                });
+            }
+
+            function checkExistingSession() {
+                const sessionData = localStorage.getItem('7loww_session');
+                if (sessionData) {
+                    try {
+                        const session = JSON.parse(sessionData);
+                        if (session.username && session.timestamp && (Date.now() - session.timestamp < 24 * 60 * 60 * 1000)) {
+                            currentUser = session.username;
+                            showDashboard();
+                            return;
+                        }
+                    } catch (e) {
+                        localStorage.removeItem('7loww_session');
+                    }
+                }
+                
+                const tempSession = sessionStorage.getItem('7loww_temp_session');
+                if (tempSession) {
+                    try {
+                        const session = JSON.parse(tempSession);
                         currentUser = session.username;
                         showDashboard();
                         return;
+                    } catch (e) {
+                        sessionStorage.removeItem('7loww_temp_session');
                     }
-                } catch (e) {
-                    localStorage.removeItem('7loww_session');
                 }
             }
-            
-            const tempSession = sessionStorage.getItem('7loww_temp_session');
-            if (tempSession) {
-                try {
-                    const session = JSON.parse(tempSession);
-                    currentUser = session.username;
+
+            function handleLogin(e) {
+                e.preventDefault();
+                loginError.textContent = '';
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const keepConnected = keepConnectedCheckbox.checked;
+
+                console.log('Login attempt:', username);
+
+                if (SELLER_CREDENTIALS[username] && SELLER_CREDENTIALS[username] === password) {
+                    currentUser = username;
+                    
+                    const sessionData = {
+                        username: username,
+                        timestamp: Date.now()
+                    };
+
+                    if (keepConnected) {
+                        localStorage.setItem('7loww_session', JSON.stringify(sessionData));
+                    } else {
+                        sessionStorage.setItem('7loww_temp_session', JSON.stringify(sessionData));
+                    }
+
+                    console.log('Login successful:', username);
                     showDashboard();
-                    return;
-                } catch (e) {
-                    sessionStorage.removeItem('7loww_temp_session');
-                }
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            loginError.textContent = '';
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const keepConnected = keepConnectedCheckbox.checked;
-
-            if (SELLER_CREDENTIALS[username] && SELLER_CREDENTIALS[username] === password) {
-                currentUser = username;
-                
-                const sessionData = {
-                    username: username,
-                    timestamp: Date.now()
-                };
-
-                if (keepConnected) {
-                    localStorage.setItem('7loww_session', JSON.stringify(sessionData));
+                    showNotification('Connexion réussie!');
                 } else {
-                    sessionStorage.setItem('7loww_temp_session', JSON.stringify(sessionData));
+                    loginError.textContent = "Nom d'utilisateur ou mot de passe incorrect.";
+                    console.log('Login failed for:', username);
                 }
-
-                showDashboard();
-                showNotification('Connexion réussie!');
-            } else {
-                loginError.textContent = "Nom d'utilisateur ou mot de passe incorrect.";
             }
-        }
 
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('7loww_session');
-            sessionStorage.removeItem('7loww_temp_session');
-            
-            if (ordersSubscription) {
-                ordersSubscription.unsubscribe();
-                ordersSubscription = null;
-            }
-            
-            loginPage.classList.remove('hidden');
-            dashboardPage.classList.add('hidden');
-            loginForm.reset();
-            orders = [];
-            filteredOrders = [];
-        }
-
-        function showDashboard() {
-            usernameDisplay.textContent = currentUser;
-            loginPage.classList.add('hidden');
-            dashboardPage.classList.remove('hidden');
-            loadOrders();
-            setupRealtimeSubscription();
-        }
-
-        async function loadOrders() {
-            try {
-                setLoadingState(true);
+            function logout() {
+                console.log('Logging out...');
+                currentUser = null;
+                localStorage.removeItem('7loww_session');
+                sessionStorage.removeItem('7loww_temp_session');
                 
-                if (supabase) {
+                if (ordersSubscription) {
+                    ordersSubscription.unsubscribe();
+                    ordersSubscription = null;
+                }
+                
+                loginPage.classList.remove('hidden');
+                dashboardPage.classList.add('hidden');
+                loginForm.reset();
+                orders = [];
+                filteredOrders = [];
+            }
+
+            function showDashboard() {
+                console.log('Showing dashboard for:', currentUser);
+                usernameDisplay.textContent = currentUser;
+                loginPage.classList.add('hidden');
+                dashboardPage.classList.remove('hidden');
+                loadOrders();
+                setupRealtimeSubscription();
+            }
+
+            async function loadOrders() {
+                try {
+                    console.log('Loading orders...');
+                    setLoadingState(true);
+                    
                     const { data, error } = await supabase
                         .from('orders')
                         .select('*')
                         .order('created_at', { ascending: false });
 
-                    if (error) throw error;
+                    if (error) {
+                        console.error('Supabase error:', error);
+                        throw error;
+                    }
+
+                    console.log('Orders loaded:', data);
                     orders = data || [];
-                } else {
-                    // Mock data for development
+                    
+                    populateProductFilter();
+                    applyFilters();
+                    updateStats();
+                    
+                } catch (error) {
+                    console.error('Error loading orders:', error);
+                    showNotification('Erreur de chargement des commandes', true);
+                    
+                    // Fallback to mock data for development
+                    console.log('Using mock data as fallback...');
                     orders = generateMockOrders();
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
+                    populateProductFilter();
+                    applyFilters();
+                    updateStats();
+                } finally {
+                    setLoadingState(false);
+                }
+            }
+
+            function generateMockOrders() {
+                const products = [
+                    { name: '🍰 Gâteau au Chocolat', value: 'gateau-chocolat', price: 45 },
+                    { name: '🍓 Tarte aux Fraises', value: 'tarte-fraise', price: 50 },
+                    { name: '🥧 Baklawa Traditionnel', value: 'baklawa', price: 35 },
+                    { name: '🍯 Makroudh Normal', value: 'makroudh', price: 30 },
+                    { name: '🧁 Cupcakes Assortis', value: 'cupcakes', price: 40 }
+                ];
+
+                const names = ['Ahmed Ben Ali', 'Fatma Trabelsi', 'Mohamed Khalil', 'Leila Mansouri', 'Youssef Bouazizi'];
+                const statuses = ['pending', 'completed', 'cancelled'];
+                const mockOrders = [];
+
+                for (let i = 1; i <= 15; i++) {
+                    const product = products[Math.floor(Math.random() * products.length)];
+                    const quantity = (Math.random() * 3 + 0.5).toFixed(1);
+                    const totalPrice = (product.price * quantity).toFixed(2);
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+                    
+                    mockOrders.push({
+                        id: i.toString(),
+                        customer_name: names[Math.floor(Math.random() * names.length)],
+                        email: Math.random() > 0.5 ? `client${i}@email.com` : null,
+                        phone: `+216 ${Math.floor(Math.random() * 90 + 10)} ${Math.floor(Math.random() * 900 + 100)} ${Math.floor(Math.random() * 900 + 100)}`,
+                        product: product.value,
+                        product_name: product.name,
+                        quantity: parseFloat(quantity),
+                        price_per_kg: product.price,
+                        total_price: parseFloat(totalPrice),
+                        status: status,
+                        notes: Math.random() > 0.7 ? 'Livraison rapide souhaitée' : null,
+                        created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+                    });
                 }
 
-                populateProductFilter();
-                applyFilters();
-                updateStats();
+                return mockOrders;
+            }
+
+            function populateProductFilter() {
+                const products = [...new Set(orders.map(order => order.product_name))];
+                productFilter.innerHTML = '<option value="">Tous les produits</option>';
                 
-            } catch (error) {
-                console.error('Error loading orders:', error);
-                showNotification('Erreur de chargement des commandes', true);
-                orders = [];
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product;
+                    option.textContent = product;
+                    productFilter.appendChild(option);
+                });
+            }
+
+            function applyFilters() {
+                const statusValue = statusFilter.value;
+                const productValue = productFilter.value;
+                const searchValue = searchBox.value.toLowerCase();
+
+                filteredOrders = orders.filter(order => {
+                    const matchesStatus = !statusValue || order.status === statusValue;
+                    const matchesProduct = !productValue || order.product_name === productValue;
+                    const matchesSearch = !searchValue || 
+                        order.customer_name.toLowerCase().includes(searchValue) ||
+                        order.phone.includes(searchValue) ||
+                        (order.product_name && order.product_name.toLowerCase().includes(searchValue));
+
+                    return matchesStatus && matchesProduct && matchesSearch;
+                });
+
                 renderOrders();
-            } finally {
-                setLoadingState(false);
             }
-        }
 
-        function generateMockOrders() {
-            const products = [
-                { name: '🍰 Gâteau au Chocolat', value: 'gateau-chocolat', price: 45 },
-                { name: '🍓 Tarte aux Fraises', value: 'tarte-fraise', price: 50 },
-                { name: '🥧 Baklawa Traditionnel', value: 'baklawa', price: 35 },
-                { name: '🍯 Makroudh Normal', value: 'makroudh', price: 30 },
-                { name: '🧁 Cupcakes Assortis', value: 'cupcakes', price: 40 }
-            ];
+            function renderOrders() {
+                if (filteredOrders.length === 0) {
+                    ordersContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>Aucune commande trouvée</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.7;">
+                                ${orders.length === 0 ? 'Les nouvelles commandes apparaîtront ici.' : 'Essayez de modifier vos filtres.'}
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
 
-            const names = ['Ahmed Ben Ali', 'Fatma Trabelsi', 'Mohamed Khalil', 'Leila Mansouri', 'Youssef Bouazizi'];
-            const statuses = ['pending', 'completed', 'cancelled'];
-            const mockOrders = [];
-
-            for (let i = 1; i <= 15; i++) {
-                const product = products[Math.floor(Math.random() * products.length)];
-                const quantity = (Math.random() * 3 + 0.5).toFixed(1);
-                const totalPrice = (product.price * quantity).toFixed(2);
-                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                ordersContainer.innerHTML = '';
                 
-                mockOrders.push({
-                    id: i.toString(),
-                    customer_name: names[Math.floor(Math.random() * names.length)],
-                    email: Math.random() > 0.5 ? `client${i}@email.com` : null,
-                    phone: `+216 ${Math.floor(Math.random() * 90 + 10)} ${Math.floor(Math.random() * 900 + 100)} ${Math.floor(Math.random() * 900 + 100)}`,
-                    product: product.value,
-                    product_name: product.name,
-                    quantity: parseFloat(quantity),
-                    price_per_kg: product.price,
-                    total_price: parseFloat(totalPrice),
-                    status: status,
-                    notes: Math.random() > 0.7 ? 'Livraison rapide souhaitée' : null,
-                    created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+                filteredOrders.forEach(order => {
+                    const orderCard = createOrderCard(order);
+                    ordersContainer.appendChild(orderCard);
                 });
             }
 
-            return mockOrders;
-        }
-
-        function populateProductFilter() {
-            const products = [...new Set(orders.map(order => order.product_name))];
-            productFilter.innerHTML = '<option value="">Tous les produits</option>';
-            
-            products.forEach(product => {
-                const option = document.createElement('option');
-                option.value = product;
-                option.textContent = product;
-                productFilter.appendChild(option);
-            });
-        }
-
-        function applyFilters() {
-            const statusValue = statusFilter.value;
-            const productValue = productFilter.value;
-            const searchValue = searchBox.value.toLowerCase();
-
-            filteredOrders = orders.filter(order => {
-                const matchesStatus = !statusValue || order.status === statusValue;
-                const matchesProduct = !productValue || order.product_name === productValue;
-                const matchesSearch = !searchValue || 
-                    order.customer_name.toLowerCase().includes(searchValue) ||
-                    order.phone.includes(searchValue) ||
-                    order.product_name.toLowerCase().includes(searchValue);
-
-                return matchesStatus && matchesProduct && matchesSearch;
-            });
-
-            renderOrders();
-        }
-
-        function renderOrders() {
-            if (filteredOrders.length === 0) {
-                ordersContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <p>Aucune commande trouvée</p>
-                        <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.7;">
-                            ${orders.length === 0 ? 'Les nouvelles commandes apparaîtront ici.' : 'Essayez de modifier vos filtres.'}
-                        </p>
-                    </div>
-                `;
-                return;
-            }
-
-            ordersContainer.innerHTML = '';
-            
-            filteredOrders.forEach(order => {
-                const orderCard = createOrderCard(order);
-                ordersContainer.appendChild(orderCard);
-            });
-        }
-
-        function createOrderCard(order) {
-            const card = document.createElement('div');
-            card.className = 'order-card';
-            
-            const statusClass = `status-${order.status}`;
-            const statusText = {
-                'pending': 'En attente',
-                'completed': 'Terminée',
-                'cancelled': 'Annulée'
-            }[order.status] || order.status;
-
-            const formatDate = (dateString) => {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('fr-FR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            };
-
-            card.innerHTML = `
-                <div class="order-header">
-                    <div class="order-id">Commande #${order.id}</div>
-                    <div class="status-badge ${statusClass}">${statusText}</div>
-                </div>
+            function createOrderCard(order) {
+                const card = document.createElement('div');
+                card.className = 'order-card';
                 
-                <div class="product-name">${order.product_name || 'Produit non spécifié'}</div>
-                
-                <div class="order-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Client:</span>
-                        <span class="detail-value">${order.customer_name}</span>
+                const statusClass = `status-${order.status}`;
+                const statusText = {
+                    'pending': 'En attente',
+                    'completed': 'Terminée',
+                    'cancelled': 'Annulée'
+                }[order.status] || order.status;
+
+                const formatDate = (dateString) => {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                };
+
+                card.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-id">Commande #${order.id}</div>
+                        <div class="status-badge ${statusClass}">${statusText}</div>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Téléphone:</span>
-                        <span class="detail-value">${order.phone}</span>
-                    </div>
-                    ${order.email ? `
+                    
+                    <div class="product-name">${order.product_name || 'Produit non spécifié'}</div>
+                    
+                    <div class="order-details">
                         <div class="detail-row">
-                            <span class="detail-label">Email:</span>
-                            <span class="detail-value">${order.email}</span>
+                            <span class="detail-label">Client:</span>
+                            <span class="detail-value">${order.customer_name}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Téléphone:</span>
+                            <span class="detail-value">${order.phone}</span>
+                        </div>
+                        ${order.email ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Email:</span>
+                                <span class="detail-value">${order.email}</span>
+                            </div>
+                        ` : ''}
+                        <div class="detail-row">
+                            <span class="detail-label">Quantité:</span>
+                            <span class="detail-value">${order.quantity} kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Prix unitaire:</span>
+                            <span class="detail-value">${order.price_per_kg} DT/kg</span>
+                        </div>
+                        <div class="detail-row" style="font-weight: 600; color: var(--gold);">
+                            <span class="detail-label">Total:</span>
+                            <span class="detail-value">${order.total_price} DT</span>
+                        </div>
+                    </div>
+
+                    ${order.notes ? `
+                        <div class="order-notes">
+                            💬 ${order.notes}
                         </div>
                     ` : ''}
-                    <div class="detail-row">
-                        <span class="detail-label">Quantité:</span>
-                        <span class="detail-value">${order.quantity} kg</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Prix unitaire:</span>
-                        <span class="detail-value">${order.price_per_kg} DT/kg</span>
-                    </div>
-                    <div class="detail-row" style="font-weight: 600; color: var(--gold);">
-                        <span class="detail-label">Total:</span>
-                        <span class="detail-value">${order.total_price} DT</span>
-                    </div>
-                </div>
 
-                ${order.notes ? `
-                    <div class="order-notes">
-                        💬 ${order.notes}
-                    </div>
-                ` : ''}
-
-                <div class="order-actions">
-                    ${order.status === 'pending' ? `
-                        <button onclick="updateOrderStatus('${order.id}', 'completed')" class="btn-success">
-                            ✅ Marquer terminée
+                    <div class="order-actions">
+                        ${order.status === 'pending' ? `
+                            <button onclick="updateOrderStatus('${order.id}', 'completed')" class="btn-success">
+                                ✅ Marquer terminée
+                            </button>
+                            <button onclick="updateOrderStatus('${order.id}', 'cancelled')" class="btn-danger">
+                                ❌ Annuler
+                            </button>
+                        ` : ''}
+                        ${order.status === 'completed' ? `
+                            <button onclick="updateOrderStatus('${order.id}', 'pending')" class="btn-secondary">
+                                ↩️ Remettre en attente
+                            </button>
+                        ` : ''}
+                        <button onclick="deleteOrder('${order.id}')" class="btn-danger">
+                            🗑️ Supprimer
                         </button>
-                        <button onclick="updateOrderStatus('${order.id}', 'cancelled')" class="btn-danger">
-                            ❌ Annuler
-                        </button>
-                    ` : ''}
-                    ${order.status === 'completed' ? `
-                        <button onclick="updateOrderStatus('${order.id}', 'pending')" class="btn-secondary">
-                            ↩️ Remettre en attente
-                        </button>
-                    ` : ''}
-                    <button onclick="deleteOrder('${order.id}')" class="btn-danger">
-                        🗑️ Supprimer
-                    </button>
-                </div>
+                    </div>
 
-                <div class="order-timestamp">
-                    📅 ${formatDate(order.created_at)}
-                </div>
-            `;
+                    <div class="order-timestamp">
+                        📅 ${formatDate(order.created_at)}
+                    </div>
+                `;
 
-            return card;
-        }
+                return card;
+            }
 
-        function updateStats() {
-            const total = orders.length;
-            const pending = orders.filter(o => o.status === 'pending').length;
-            const completed = orders.filter(o => o.status === 'completed').length;
-            const revenue = orders
-                .filter(o => o.status === 'completed')
-                .reduce((sum, o) => sum + parseFloat(o.total_price || 0), 0);
+            function updateStats() {
+                const total = orders.length;
+                const pending = orders.filter(o => o.status === 'pending').length;
+                const completed = orders.filter(o => o.status === 'completed').length;
+                const revenue = orders
+                    .filter(o => o.status === 'completed')
+                    .reduce((sum, o) => sum + parseFloat(o.total_price || 0), 0);
 
-            totalOrdersEl.textContent = total;
-            pendingOrdersEl.textContent = pending;
-            completedOrdersEl.textContent = completed;
-            totalRevenueEl.textContent = `${revenue.toFixed(2)} DT`;
-        }
+                totalOrdersEl.textContent = total;
+                pendingOrdersEl.textContent = pending;
+                completedOrdersEl.textContent = completed;
+                totalRevenueEl.textContent = `${revenue.toFixed(2)} DT`;
+            }
 
-        function setupRealtimeSubscription() {
-            if (!supabase) return;
+            function setupRealtimeSubscription() {
+                try {
+                    ordersSubscription = supabase
+                        .channel('orders')
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+                            console.log('Real-time update:', payload);
+                            loadOrders();
+                            showNotification('Nouvelle commande reçue!');
+                        })
+                        .subscribe();
+                    
+                    console.log('Real-time subscription set up');
+                } catch (error) {
+                    console.error('Failed to setup real-time subscription:', error);
+                }
+            }
 
-            ordersSubscription = supabase
-                .channel('orders')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-                    console.log('Real-time update:', payload);
-                    loadOrders();
-                    showNotification('Nouvelle commande reçue!');
-                })
-                .subscribe();
-        }
+            function setLoadingState(loading) {
+                refreshBtn.classList.toggle('loading', loading);
+                refreshBtn.disabled = loading;
+            }
 
-        function setLoadingState(loading) {
-            refreshBtn.classList.toggle('loading', loading);
-            refreshBtn.disabled = loading;
-        }
+            function refreshOrders() {
+                console.log('Refreshing orders...');
+                loadOrders();
+            }
 
-        function refreshOrders() {
-            loadOrders();
-        }
+            // Global functions for order actions
+            window.updateOrderStatus = function(orderId, newStatus) {
+                const order = orders.find(o => o.id === orderId);
+                if (!order) return;
 
-        // Global functions for order actions
-        window.updateOrderStatus = function(orderId, newStatus) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
+                const statusText = {
+                    'pending': 'en attente',
+                    'completed': 'terminée',
+                    'cancelled': 'annulée'
+                }[newStatus];
 
-            const statusText = {
-                'pending': 'en attente',
-                'completed': 'terminée',
-                'cancelled': 'annulée'
-            }[newStatus];
-
-            showConfirmationModal(
-                'Changer le statut',
-                `Voulez-vous marquer cette commande comme ${statusText} ?`,
-                async () => {
-                    try {
-                        if (supabase) {
+                showConfirmationModal(
+                    'Changer le statut',
+                    `Voulez-vous marquer cette commande comme ${statusText} ?`,
+                    async () => {
+                        try {
                             const { error } = await supabase
                                 .from('orders')
                                 .update({ status: newStatus })
                                 .eq('id', orderId);
 
-                            if (error) throw error;
-                        } else {
-                            // Mock update
+                            if (error) {
+                                console.error('Update error:', error);
+                                throw error;
+                            }
+
+                            // Update local state
                             const orderIndex = orders.findIndex(o => o.id === orderId);
                             if (orderIndex !== -1) {
                                 orders[orderIndex].status = newStatus;
                             }
+
+                            applyFilters();
+                            updateStats();
+                            showNotification(`Commande marquée comme ${statusText}`);
+                            console.log(`Order ${orderId} updated to ${newStatus}`);
+                        } catch (error) {
+                            console.error('Error updating order:', error);
+                            showNotification('Erreur lors de la mise à jour', true);
                         }
-
-                        applyFilters();
-                        updateStats();
-                        showNotification(`Commande marquée comme ${statusText}`);
-                    } catch (error) {
-                        console.error('Error updating order:', error);
-                        showNotification('Erreur lors de la mise à jour', true);
                     }
-                }
-            );
-        };
+                );
+            };
 
-        window.deleteOrder = function(orderId) {
-            showConfirmationModal(
-                'Supprimer la commande',
-                'Êtes-vous sûr de vouloir supprimer cette commande ? Cette action est irréversible.',
-                async () => {
-                    try {
-                        if (supabase) {
+            window.deleteOrder = function(orderId) {
+                showConfirmationModal(
+                    'Supprimer la commande',
+                    'Êtes-vous sûr de vouloir supprimer cette commande ? Cette action est irréversible.',
+                    async () => {
+                        try {
                             const { error } = await supabase
                                 .from('orders')
                                 .delete()
                                 .eq('id', orderId);
 
-                            if (error) throw error;
-                        } else {
-                            // Mock delete
+                            if (error) {
+                                console.error('Delete error:', error);
+                                throw error;
+                            }
+
+                            // Update local state
                             orders = orders.filter(o => o.id !== orderId);
+
+                            applyFilters();
+                            updateStats();
+                            showNotification('Commande supprimée');
+                            console.log(`Order ${orderId} deleted`);
+                        } catch (error) {
+                            console.error('Error deleting order:', error);
+                            showNotification('Erreur lors de la suppression', true);
                         }
-
-                        applyFilters();
-                        updateStats();
-                        showNotification('Commande supprimée');
-                    } catch (error) {
-                        console.error('Error deleting order:', error);
-                        showNotification('Erreur lors de la suppression', true);
                     }
-                }
-            );
-        };
-
-        function showConfirmationModal(title, message, callback) {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            onConfirmCallback = callback;
-            confirmationModal.classList.add('visible');
-        }
-
-        function hideConfirmationModal() {
-            confirmationModal.classList.remove('visible');
-            onConfirmCallback = null;
-        }
-
-        function handleModalConfirm() {
-            if (onConfirmCallback) {
-                onConfirmCallback();
-            }
-            hideConfirmationModal();
-        }
-
-        function showNotification(message, isError = false) {
-            notification.textContent = message;
-            notification.className = `notification ${isError ? 'error' : ''} show`;
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
+                );
             };
+
+            function showConfirmationModal(title, message, callback) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                onConfirmCallback = callback;
+                confirmationModal.classList.add('visible');
+            }
+
+            function hideConfirmationModal() {
+                confirmationModal.classList.remove('visible');
+                onConfirmCallback = null;
+            }
+
+            function handleModalConfirm() {
+                if (onConfirmCallback) {
+                    onConfirmCallback();
+                }
+                hideConfirmationModal();
+            }
+
+            function showNotification(message, isError = false) {
+                notification.textContent = message;
+                notification.className = `notification ${isError ? 'error' : ''} show`;
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
         }
 
-        console.log('7loww Seller Dashboard initialized');
-    </script>
-</body>
-</html>
+        console.log('7loww Seller Dashboard script loaded');
